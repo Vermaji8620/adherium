@@ -2,7 +2,20 @@
 
 Standalone Express + Mongoose API for a local, synthetic-data review of the respiratory-monitoring prototype. It does not connect to Hailie devices or an EHR, and it is not a clinical system. Authentication and authorization are not implemented. Keep the server bound to localhost and never expose these unauthenticated APIs publicly.
 
-Structure: `src/config.js` environment configuration; `src/db.js` MongoDB connection; `src/models/` Mongoose models and indexes; `src/routes.js` versioned API; `src/services/analytics.js` server-side dashboard aggregation; `src/validation.js` request/query validation; `src/seed/` deterministic generator and opt-in upsert runner; `test/` focused checks.
+Structure: `src/config.js` environment configuration; `src/db.js` MongoDB connection; `src/models/` Mongoose models and indexes; `src/routes/<resource>/index.js` resource routes, with `src/routes/index.js` mounting them and `src/routes/shared.js` holding common helpers; `src/services/analytics.js` server-side dashboard aggregation; `src/validation.js` request/query validation; `src/seed/` deterministic generator and opt-in upsert runner; `test/` focused checks.
+
+## Formatting
+
+The repository-level Prettier configuration is in `.prettierrc.json`. It sets `singleQuote: true`; all other formatting options use Prettier defaults. The root `.prettierignore` excludes `node_modules`, environment files, and the saved prototype files under `reference/` from formatting.
+
+Run formatting from the workspace root:
+
+```powershell
+Set-Location C:\Users\Adi\Desktop\Adherium
+npm run format
+```
+
+To check formatting without changing files, run `npm run format:check`. These scripts format/check the repository using the root package configuration, including backend source files.
 
 ## Source review and data map
 

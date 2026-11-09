@@ -1,0 +1,10 @@
+const express = require('express');
+const router = express.Router();
+router.use(require('./alerts'));
+router.use(require('./analytics'));
+router.use(require('./data'));
+router.use(require('./devices'));
+router.use(require('./notes'));
+router.use(require('./patients'));
+router.use(require('./reports'));
+module.exports = { api: router };
