@@ -1,0 +1,621 @@
+<div class="frame">
+  <div class="app" id="app">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="11" cy="11" r="8" fill="#087BFF"></circle>
+        <circle cx="21" cy="11" r="8" fill="#087BFF"></circle>
+        <circle cx="16" cy="21" r="8" fill="#111"></circle>
+        <circle cx="16" cy="15.5" r="3" fill="#fff"></circle>
+      </svg>
+      Adherium
+    </div>
+    <header class="top">
+      <button class="circ mnav" id="mnav" aria-label="Open navigation">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        >
+          <path d="M4 7h16M4 12h16M4 17h10"></path>
+        </svg>
+      </button>
+      <nav class="pills" id="pills" aria-label="Primary">
+        <span class="pill-ind" id="pill-ind" style="width: 0px"></span>
+        <button class="pill-nav" data-p="dashboard">Dashboard</button>
+        <button class="pill-nav" data-p="patients">Patient Monitoring</button>
+        <button class="pill-nav" data-p="devices">Smart Inhalers</button>
+        <button class="pill-nav" data-p="respiratory-analytics">
+          Analytics
+        </button>
+        <button class="pill-nav" data-p="reports">Reports</button>
+      </nav>
+      <div class="top-r">
+        <button class="circ" id="settings" aria-label="Settings">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+          >
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"
+            ></path>
+          </svg>
+        </button>
+        <button class="circ" id="bell" aria-label="Notifications">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+          >
+            <path
+              d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 0 0 4 0"
+            ></path></svg
+          ><span class="badge"></span>
+        </button>
+        <button class="acct" id="acct" aria-label="Account and role">
+          <span class="av" id="av">HP</span
+          ><span class="t"
+            ><b id="role-lbl">Healthcare Provider</b
+            ><small>Respiratory Care Team</small></span
+          >
+        </button>
+      </div>
+    </header>
+
+    <aside class="side" id="side">
+      <div class="greet" id="greet">Good morning,<br />care team.</div>
+      <div class="greet-sub">Today’s respiratory monitoring summary</div>
+      <div class="nav-lbl">Monitoring</div>
+      <div id="nav-a">
+        <button class="nav-i" data-p="dashboard">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="4" y="4" width="7" height="7" rx="2"></rect>
+            <rect x="13" y="4" width="7" height="7" rx="2"></rect>
+            <rect x="4" y="13" width="7" height="7" rx="2"></rect>
+            <rect x="13" y="13" width="7" height="7" rx="2"></rect></svg
+          ><span>Overview</span></button
+        ><button class="nav-i" data-p="patients">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 12h4l3-7 4 14 3-7h4"></path></svg
+          ><span>Patient Monitoring</span></button
+        ><button class="nav-i" data-p="patient-profile">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="8" r="4"></circle>
+            <path d="M4 21a8 8 0 0 1 16 0"></path></svg
+          ><span>Patient Health Profile</span></button
+        ><button class="nav-i" data-p="devices">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path
+              d="M9 3h5v6l3 2v8a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-8l2-2z"
+            ></path>
+            <path d="M9 9h5"></path></svg
+          ><span>Smart Inhaler Devices</span></button
+        ><button class="nav-i" data-p="medication-adherence">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect
+              x="3"
+              y="9"
+              width="18"
+              height="6"
+              rx="3"
+              transform="rotate(-35 12 12)"
+            ></rect>
+            <path d="m9.5 8.5 5 7"></path></svg
+          ><span>Medication Adherence</span>
+        </button>
+      </div>
+      <div class="nav-lbl">Care</div>
+      <div id="nav-b">
+        <button class="nav-i" data-p="respiratory-analytics">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 4v8M12 10c-1.5 1-3 1.5-3 1.5S7 7 5 8c-2 1-2 6-2 9 0 2 2 3 4 2s3-3 3-6M12 10c1.5 1 3 1.5 3 1.5S17 7 19 8c2 1 2 6 2 9 0 2-2 3-4 2s-3-3-3-6"
+            ></path></svg
+          ><span>Respiratory Analytics</span></button
+        ><button class="nav-i" data-p="alerts">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path
+              d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 0 0 4 0"
+            ></path></svg
+          ><span>Alerts &amp; Follow-up</span></button
+        ><button class="nav-i" data-p="care-team">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="9" cy="8" r="3.5"></circle>
+            <path
+              d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14a6 6 0 0 1 3 6"
+            ></path></svg
+          ><span>Care Team Workspace</span></button
+        ><button class="nav-i" data-p="reports">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg
+          ><span>Reports &amp; Insights</span></button
+        ><button class="nav-i on" data-p="data-management">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <ellipse cx="12" cy="5" rx="8" ry="3"></ellipse>
+            <path
+              d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"
+            ></path></svg
+          ><span>Data &amp; Device Management</span
+          ><svg
+            class="chev"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="m6 9 6 6 6-6"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="role-card" style="margin-top: 22px">
+        <b>Viewing as</b
+        ><small>Switch role to change what this view emphasizes</small>
+        <div class="role-opts" id="roles">
+          <button data-r="provider" class="on">Healthcare Provider</button
+          ><button data-r="coordinator" class="">Care Coordinator</button
+          ><button data-r="resp" class="">Respiratory Care Team</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="work" id="work">
+      <div class="whead">
+        <div style="">
+          <h1>Data &amp; Device Management</h1>
+          <div class="crumb">
+            Overview
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m9 6 6 6-6 6"></path>
+            </svg>
+            Data Management
+          </div>
+        </div>
+        <div class="ctrls" style="">
+          <span class="demo">● Synthetic demo data</span
+          ><button class="cbtn" id="dm-exp">
+            Export audit log<span class="cic"
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path></svg
+            ></span>
+          </button>
+        </div>
+      </div>
+      <section class="card" style="margin-bottom: 16px">
+        <div class="card-h">
+          <div>
+            <h2>Data flow</h2>
+            <div class="k">
+              How dose events move from the inhaler sensor to this dashboard.
+              Simulated in the demo
+            </div>
+          </div>
+          <span class="tag blue">Demo pipeline</span>
+        </div>
+        <div class="pipe">
+          <div class="node dk">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M9 3h5v6l3 2v8a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-8l2-2z"
+              ></path>
+              <path d="M9 9h5"></path>
+            </svg>
+          </div>
+          <div class="link"><i></i><i></i><i></i></div>
+          <div class="node">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M3 12h4l3-7 4 14 3-7h4"></path>
+            </svg>
+          </div>
+          <div class="link"><i></i><i></i><i></i></div>
+          <div class="node bl">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <ellipse cx="12" cy="5" rx="8" ry="3"></ellipse>
+              <path
+                d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"
+              ></path>
+            </svg>
+          </div>
+          <div class="link"><i></i><i></i><i></i></div>
+          <div class="node dk">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="4" y="4" width="7" height="7" rx="2"></rect>
+              <rect x="13" y="4" width="7" height="7" rx="2"></rect>
+              <rect x="4" y="13" width="7" height="7" rx="2"></rect>
+              <rect x="13" y="13" width="7" height="7" rx="2"></rect>
+            </svg>
+          </div>
+        </div>
+        <div class="pipe-l">
+          <span>Inhaler sensor</span><span>Phone app</span
+          ><span>Cloud ingestion</span><span>Care dashboard</span>
+        </div>
+      </section>
+      <div class="grid">
+        <section class="card c4" style="">
+          <div class="card-h"><h2>Connections</h2></div>
+          <div class="q" style="cursor: default">
+            <span
+              class="node"
+              style="
+                width: 40px;
+                height: 40px;
+                background: #e4f0ff;
+                color: #087bff;
+              "
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 12h4l3-7 4 14 3-7h4"></path></svg></span
+            ><span style="flex: 1"
+              ><b>Phone app relay</b><br /><small class="k"
+                >Demo connection</small
+              ></span
+            ><span class="st" style="--c: #087bff">Active</span>
+          </div>
+          <div class="q" style="cursor: default">
+            <span
+              class="node"
+              style="
+                width: 40px;
+                height: 40px;
+                background: #e4f0ff;
+                color: #087bff;
+              "
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 12h4l3-7 4 14 3-7h4"></path></svg></span
+            ><span style="flex: 1"
+              ><b>Cloud ingestion</b><br /><small class="k"
+                >Demo connection</small
+              ></span
+            ><span class="st" style="--c: #087bff">Active</span>
+          </div>
+          <div class="q" style="cursor: default">
+            <span class="node" style="width: 40px; height: 40px"
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <ellipse cx="12" cy="5" rx="8" ry="3"></ellipse>
+                <path
+                  d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"
+                ></path></svg></span
+            ><span style="flex: 1"
+              ><b>EHR export</b><br /><small class="k"
+                >Not connected in demo</small
+              ></span
+            ><span class="st" style="--c: #d0d0d0">Off</span>
+          </div>
+        </section>
+        <section class="card c4" style="">
+          <div class="card-h"><h2>Sensor firmware</h2></div>
+          <div style="margin-bottom: 14px">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                font-size: 13px;
+                margin-bottom: 6px;
+              "
+            >
+              <span>Version 2.4.1 (current)</span
+              ><b style="font-weight: 600">141</b>
+            </div>
+            <div class="hbar">
+              <i
+                data-w="56.85483870967742"
+                style="background: rgb(8, 123, 255); width: 56.8548%"
+              ></i>
+            </div>
+          </div>
+          <div style="margin-bottom: 14px">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                font-size: 13px;
+                margin-bottom: 6px;
+              "
+            >
+              <span>Version 2.3.8</span><b style="font-weight: 600">71</b>
+            </div>
+            <div class="hbar">
+              <i
+                data-w="28.62903225806452"
+                style="background: rgb(127, 183, 247); width: 28.629%"
+              ></i>
+            </div>
+          </div>
+          <div style="margin-bottom: 14px">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                font-size: 13px;
+                margin-bottom: 6px;
+              "
+            >
+              <span>Version 2.2.0</span><b style="font-weight: 600">36</b>
+            </div>
+            <div class="hbar">
+              <i
+                data-w="14.516129032258066"
+                style="background: rgb(17, 17, 17); width: 14.5161%"
+              ></i>
+            </div>
+          </div>
+          <button class="btn" id="dm-fw" style="margin-top: 4px">
+            Schedule update for older sensors
+          </button>
+        </section>
+        <section class="card c4" style="">
+          <div class="card-h"><h2>Import enrollment</h2></div>
+          <label class="drop" id="dm-drop"
+            ><input
+              type="file"
+              accept=".csv,text/csv"
+              id="dm-file"
+              hidden=""
+            /><b>Drop a CSV or browse</b>Columns: patient_id, cohort. Checked in
+            your browser only</label
+          >
+          <button
+            class="btn"
+            id="dm-sample"
+            style="margin-top: 10px; width: 100%"
+          >
+            Use a sample file with errors
+          </button>
+          <div id="dm-res" style="margin-top: 10px"></div>
+        </section>
+        <section class="card c6" style="">
+          <div class="card-h"><h2>Import history</h2></div>
+          <table class="rt">
+            <thead>
+              <tr>
+                <th>Import</th>
+                <th class="r">Rows</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="dm-imp">
+              <tr style="cursor: default">
+                <td class="pri" data-l="Import">data</td>
+                <td class="r" data-l="Rows">248</td>
+                <td data-l="Status"><span class="tag">Completed</span></td>
+                <td data-l="Date">Nov 9</td>
+              </tr>
+              <tr style="cursor: default">
+                <td class="pri" data-l="Import">tracts-26107</td>
+                <td class="r" data-l="Rows">18</td>
+                <td data-l="Status"><span class="tag gray">Failed</span></td>
+                <td data-l="Date">Nov 9</td>
+              </tr>
+              <tr style="cursor: default">
+                <td class="pri" data-l="Import">
+                  Enrollment batch, spring clinic
+                </td>
+                <td class="r" data-l="Rows">42</td>
+                <td data-l="Status"><span class="tag">Completed</span></td>
+                <td data-l="Date">Nov 6</td>
+              </tr>
+              <tr style="cursor: default">
+                <td class="pri" data-l="Import">Device assignment update</td>
+                <td class="r" data-l="Rows">18</td>
+                <td data-l="Status">
+                  <span class="tag blue">Completed with warnings</span>
+                </td>
+                <td data-l="Date">Oct 31</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="card c6" style="">
+          <div class="card-h">
+            <h2>Audit log</h2>
+            <span class="k">Actions taken in this browser</span>
+          </div>
+          <div id="dm-audit">
+            <div class="ev" style="--c: #087bff; cursor: default">
+              <b>Imported data (248 rows)</b><span class="t">2 min ago</span
+              ><small>Respiratory Care Team</small>
+            </div>
+            <div class="ev" style="--c: #087bff; cursor: default">
+              <b>Import failed: tracts-26107</b><span class="t">21 min ago</span
+              ><small>Healthcare Provider</small>
+            </div>
+            <div class="ev" style="--c: #087bff; cursor: default">
+              <b>Generated follow-up log RP-017</b
+              ><span class="t">26 min ago</span
+              ><small>Healthcare Provider</small>
+            </div>
+            <div class="ev" style="--c: #087bff; cursor: default">
+              <b>Generated cohort summary RP-016</b
+              ><span class="t">26 min ago</span
+              ><small>Healthcare Provider</small>
+            </div>
+            <div class="ev" style="--c: #087bff; cursor: default">
+              <b>Deleted report RP-016</b><span class="t">28 min ago</span
+              ><small>Care Coordinator</small>
+            </div>
+            <div class="ev" style="--c: #087bff; cursor: default">
+              <b>Deleted report RP-017</b><span class="t">29 min ago</span
+              ><small>Care Coordinator</small>
+            </div>
+            <div class="ev" style="--c: #087bff; cursor: default">
+              <b>Deleted report RP-018</b><span class="t">29 min ago</span
+              ><small>Care Coordinator</small>
+            </div>
+            <div class="ev" style="--c: #087bff; cursor: default">
+              <b>Generated cohort summary RP-018</b
+              ><span class="t">29 min ago</span><small>Care Coordinator</small>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+<div class="scrim" id="scrim"></div>
+<aside
+  class="drawer"
+  id="drawer"
+  role="dialog"
+  aria-label="Patient summary"
+></aside>
+<div class="modal" id="modal" role="dialog" aria-modal="true"></div>
+<div id="tip" role="tooltip"></div>
+<div id="toasts" aria-live="polite"></div>
