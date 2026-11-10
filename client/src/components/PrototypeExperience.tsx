@@ -14,6 +14,7 @@ declare global {
     __ADHERIUM_BOOT__: Awaited<ReturnType<typeof loadBoot>>;
     __ADHERIUM_PATIENTS__?: Array<{
       id: string;
+      deviceId?: string;
       status: string;
       battery: number;
       lastSync: number;
@@ -89,7 +90,9 @@ function replaceArray<T>(target: T[], source: T[]) {
 function mergeBootData(current: Boot, next: Boot) {
   const loaded = new Set(next.loadedResources);
   if (loaded.has('patients')) {
-    const previous = new Map(current.patients.map((patient) => [patient.id, patient]));
+    const previous = new Map(
+      current.patients.map((patient) => [patient.id, patient]),
+    );
     const patients = next.patients.map((patient) => {
       const existing = previous.get(patient.id);
       if (!existing) return patient;

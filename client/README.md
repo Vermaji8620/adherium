@@ -22,7 +22,7 @@ npm run dev
 
 If `.env.local` already exists, keep it and set `BACKEND_API_URL=http://127.0.0.1:4000`. Browse to <http://localhost:3000/overview>. The backend health route is <http://127.0.0.1:4000/health>.
 
-The backend URL is read by `next.config.ts` on the server and proxied through Next rewrites for `/api/*` and `/health`. 
+The backend URL is read by `next.config.ts` on the server and proxied through Next rewrites for `/api/*` and `/health`.
 
 ## Prototype sources reused
 
@@ -35,18 +35,18 @@ The backend URL is read by `next.config.ts` on the server and proxied through Ne
 
 `src/app/` defines these screens and clean, hash-free paths:
 
-| Screen | Path |
-| --- | --- |
-| Overview | `/overview` ( `/` redirects here ) |
-| Patient Monitoring | `/patients` |
-| Patient Health Profile | `/patient-profile` or `/patient-profile/:id` |
-| Smart Inhaler Devices | `/devices` |
-| Medication Adherence | `/medication-adherence` |
-| Respiratory Analytics | `/analytics` |
-| Alerts & Follow-up | `/alerts` |
-| Care Team Workspace | `/care-team` |
-| Reports & Insights | `/reports` |
-| Data & Device Management | `/data-management` |
+| Screen                   | Path                                         |
+| ------------------------ | -------------------------------------------- |
+| Overview                 | `/overview` ( `/` redirects here )           |
+| Patient Monitoring       | `/patients`                                  |
+| Patient Health Profile   | `/patient-profile` or `/patient-profile/:id` |
+| Smart Inhaler Devices    | `/devices`                                   |
+| Medication Adherence     | `/medication-adherence`                      |
+| Respiratory Analytics    | `/analytics`                                 |
+| Alerts & Follow-up       | `/alerts`                                    |
+| Care Team Workspace      | `/care-team`                                 |
+| Reports & Insights       | `/reports`                                   |
+| Data & Device Management | `/data-management`                           |
 
 The shared root layout keeps the prototype shell mounted across navigation. The prototype navigation updates the pathname; the original hash-based navigation has been removed. Selecting a patient opens `/patient-profile/:id`.
 
@@ -56,6 +56,7 @@ The shared root layout keeps the prototype shell mounted across navigation. The 
 - The Overview renders its recent data first. Six-week trend and cohort history loads in the background; those charts show a loading state until the history arrives.
 - Other screens load their API resources the first time they are opened. The client keeps successful resource requests in memory for 60 seconds, shares in-flight requests, and clears that cache after successful API mutations.
 - `src/lib/api.ts` fetches and adapts the backend records for the prototype screens. Cohorts are matched by stable cohort IDs, rather than object identity, so API-backed patients appear in cohort summaries and charts.
+- Individual device sync uses the linked device `externalId` (for example, `DEV-001`), not the patient ID (for example, `PT-001`).
 - Patient profile data is loaded before its screen is rendered. If a patient has no rescue-use events, the timeline remains empty without trying to animate missing SVG points.
 - Adherence charts skip unrecorded days and show gaps where data is missing. Empty data ranges use safe chart bounds, preventing `NaN` SVG coordinates.
 - GSAP entrance animations resolve their targets first and skip the animation when a screen has no matching elements. This keeps optional empty states from producing “target not found” console warnings.
@@ -76,7 +77,7 @@ The UI calls the existing `/api/v1` endpoints through Next rewrites:
 - Reports & Insights: `/reports`, `POST /reports`, `DELETE /reports/:id`, `/reports/:id/export.csv`.
 - Data & Device Management: `/data/imports`, `/data/imports/validate`, `/data/integrations`, `/data/firmware`, `/data/firmware/schedule`, `/data/audit`.
 
-The app fetches API data only; it does not generate patient, adherence, event, alert, note, import, report, or device rows in the browser. Missing adherence samples remain unrecorded in the UI math. Symptom-free-day values are unavailable because the backend does not supply them.
+The app fetches API data only; it does not generate patient, adherence, event, alert, note, import, report, or device rows in the browser. Missing adherence samples remain unrecorded in the UI math. Symptom-free days are derived from adherence records as days with zero rescue uses; the backend stores these daily `rescueUses` values rather than a separate symptom-free-days field.
 
 Device sync and firmware scheduling are explicitly simulated by backend endpoints. Fleet sync returns to its idle display after the request; a toast reports how many simulated requests were recorded and clarifies that no inhalers were contacted. CSV validation records a validation result only; it does not enroll or import patients. Integration statuses are display records and no external system is contacted. Authentication is not implemented; use this application only with the local synthetic-data backend.
 

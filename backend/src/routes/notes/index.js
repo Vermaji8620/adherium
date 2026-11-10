@@ -1,3 +1,4 @@
+const { randomUUID } = require('node:crypto');
 const {
   express,
   Patient,
@@ -55,6 +56,7 @@ router.post(
     const b = objectBody(req.body),
       p = await patientById(b.patient);
     const item = await CareNote.create({
+      externalId: `CN-${randomUUID()}`,
       patient: p._id,
       role: boundedString(b.role || 'Healthcare Provider', 'role', 1, 100),
       category: b.category,

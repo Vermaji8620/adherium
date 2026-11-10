@@ -1,4 +1,41 @@
+# Dependencies and package-manager artifacts
 **/node_modules/
+**/.pnp.*
+**/package-lock.json
+**/npm-shrinkwrap.json
+**/yarn.lock
+**/pnpm-lock.yaml
+**/bun.lock*
+
+# Next.js and other generated build output
+**/.next/
+**/out/
+**/dist/
+**/build/
+**/coverage/
+**/.turbo/
+**/.vercel/
+**/storybook-static/
+**/playwright-report/
+**/test-results/
+
+# Generated files and tool caches
+**/next-env.d.ts
+**/*.tsbuildinfo
+**/.cache/
+**/.eslintcache
+**/.prettier-cache
+
+# Minified and source-map assets
+**/*.min.js
+**/*.min.css
+**/*.map
+
+# Environment files, logs, and OS metadata
 **/.env*
-/reference/Adherium_ Respiratory Monitoring.html
-/reference/Adherium_ Respiratory Monitoring_files/
+**/*.log
+**/.DS_Store
+**/Thumbs.db
+
+# Original saved reference artifacts are read-only inputs
+/reference/

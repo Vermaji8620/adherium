@@ -348,7 +348,8 @@ PAGES['patient-profile'] = () => {
   const a7 = adh(p, 0, 7),
     a30 = adh(p, 0, 30),
     r30 = rescueSum(p, 0, 30),
-    sfd = null;
+    recentRescue = p.rescue.slice(-30).filter(Number.isFinite),
+    sfd = recentRescue.filter((uses) => uses === 0).length;
   const alerts = buildAlerts().filter((a) => a.p === p && a.status !== 'ack');
   const notes = DB.notes.filter((n) => n.pt === p.id);
   w.innerHTML =
@@ -358,7 +359,7 @@ PAGES['patient-profile'] = () => {
       `<div class="picker"><div class="search" style="min-width:220px">${ic('user')}<input id="pp-q" placeholder="Switch patient" aria-label="Find a patient" autocomplete="off"></div><div class="picker-r" id="pp-r"></div></div><button class="cbtn" id="pp-exp">Export<span class="cic">${ic('export')}</span></button>`,
     ) +
     `
-    <div class="kpis"><div class="kpi dk"><span class="k">Cohort</span><b style="font-size:22px">${p.cohort.name}</b></div><div class="kpi"><span class="k">Adherence, 30 days</span><b><span data-count="${(a30 * 100).toFixed(1)}" data-dec="1">0</span><small>%</small></b></div><div class="kpi"><span class="k">Rescue uses, 30 days</span><b data-count="${r30}">0</b></div><div class="kpi bl"><span class="k">Symptom-free days</span><b>—<small style="color:#D5E7FF">unavailable</small></b></div></div>
+    <div class="kpis"><div class="kpi dk"><span class="k">Cohort</span><b style="font-size:22px">${p.cohort.name}</b></div><div class="kpi"><span class="k">Adherence, 30 days</span><b><span data-count="${(a30 * 100).toFixed(1)}" data-dec="1">0</span><small>%</small></b></div><div class="kpi"><span class="k">Rescue uses, 30 days</span><b data-count="${r30}">0</b></div><div class="kpi bl"><span class="k">Symptom-free days</span><b><span data-count="${sfd}">0</span><small style="color:#D5E7FF">of ${recentRescue.length}</small></b></div></div>
     <div class="grid">
       <section class="card c8"><div class="card-h"><div><h2>Dose calendar</h2><div class="k">Each circle is one day. Left half is the morning dose, right half the evening dose</div></div><div class="legend"><span><i class="h-blue"></i>Taken</span><span><i class="h-ink"></i>Missed</span></div></div>
         <div class="cal" id="pp-cal"></div></section>
@@ -529,13 +530,17 @@ function drawDeviceCard(el, p) {
   el.innerHTML = `<div class="card-h"><h2>Smart <b>inhaler</b></h2>${devTag(p).replace('class="st"', 'class="st" style="color:#fff"')}</div><div id="dc-ill">${inhalerSVG(p.id)}</div>
     <dl class="kv" style="color:#fff;margin-top:6px"><dt style="color:#9A9A9A">Last sync</dt><dd id="dc-sync">${fmtAgo(p.lastSync)}</dd><dt style="color:#9A9A9A">Sensor battery</dt><dd>${p.battery}%</dd></dl>
     <div class="progress" style="margin:16px 0 6px;opacity:0" id="dc-pr"><i></i></div><div class="k" id="dc-msg" style="color:#9A9A9A;min-height:18px"></div>
-    <button class="btn-blue" id="dc-sync-btn"><span>Request sync</span><i>${ic('arrow')}</i></button>`;
+    <button class="btn-blue" id="dc-sync-btn" ${p.deviceId ? '' : 'disabled'}><span>${p.deviceId ? 'Request sync' : 'No device linked'}</span><i>${ic('arrow')}</i></button>`;
   $('#dc-sync-btn', el).onclick = () =>
     runSync(p, el, () => {
       $('#dc-sync', el).textContent = 'Just now';
     });
 }
 function runSync(p, el, done) {
+  if (!p.deviceId) {
+    toast('No device is linked to this patient');
+    return;
+  }
   const ill = $('.device-ill', el),
     pr = $('.progress', el),
     bar = $('.progress i', el),
@@ -550,10 +555,13 @@ function runSync(p, el, done) {
     duration: RM ? 0.01 : 0.6,
     onComplete: () =>
       window
-        .__ADHERIUM_API__('/devices/' + encodeURIComponent(p.id) + '/sync', {
-          method: 'POST',
-          body: {},
-        })
+        .__ADHERIUM_API__(
+          '/devices/' + encodeURIComponent(p.deviceId) + '/sync',
+          {
+            method: 'POST',
+            body: {},
+          },
+        )
         .then((result) => {
           ill.classList.remove('syncing');
           btn.disabled = false;
@@ -984,7 +992,17 @@ PAGES['respiratory-analytics'] = () => {
   P.forEach((p) => rescueHours(p, days).forEach((h) => hours[h]++));
   const totR = hours.reduce((a, b) => a + b, 0);
   const night = hours.slice(0, 6).reduce((a, b) => a + b, 0);
-  const sfd = [];
+  const sfd = P.map(
+    (p) =>
+      p.rescue
+        .slice(-30)
+        .filter(Number.isFinite)
+        .filter((uses) => uses === 0).length,
+  );
+  const sortedSfd = sfd.slice().sort((a, b) => a - b);
+  const medianSfd = sortedSfd.length
+    ? sortedSfd[Math.floor(sortedSfd.length / 2)]
+    : 0;
   w.innerHTML =
     head(
       'Respiratory Analytics',
@@ -1001,12 +1019,12 @@ PAGES['respiratory-analytics'] = () => {
         .join('')}</div>`,
     ) +
     `
-    <div class="kpis"><div class="kpi"><span class="k">Rescue uses, ${days} days</span><b data-count="${totR}">0</b></div><div class="kpi dk"><span class="k">Overnight share, 00:00–06:00</span><b><span data-count="${totR ? ((night / totR) * 100).toFixed(1) : 0}" data-dec="1">0</span><small style="color:#9A9A9A">%</small></b></div><div class="kpi"><span class="k">Rescue uses per patient per week</span><b data-count="${(totR / P.length / (days / 7)).toFixed(2)}" data-dec="2">0</b></div><div class="kpi bl"><span class="k">Median symptom-free days, 30 d</span><b>—<small style="color:#9A9A9A">unavailable</small></b></div></div>
+    <div class="kpis"><div class="kpi"><span class="k">Rescue uses, ${days} days</span><b data-count="${totR}">0</b></div><div class="kpi dk"><span class="k">Overnight share, 00:00–06:00</span><b><span data-count="${totR ? ((night / totR) * 100).toFixed(1) : 0}" data-dec="1">0</span><small style="color:#9A9A9A">%</small></b></div><div class="kpi"><span class="k">Rescue uses per patient per week</span><b data-count="${(totR / P.length / (days / 7)).toFixed(2)}" data-dec="2">0</b></div><div class="kpi bl"><span class="k">Median symptom-free days, 30 d</span><b data-count="${medianSfd}">0</b></div></div>
     <div class="grid">
       <section class="card c5"><div class="card-h"><div><h2>Rescue use by hour</h2><div class="k">Each bar is one hour of the day. Black marks overnight use</div></div></div><svg class="clock" id="ra-clock" viewBox="0 0 320 320" style="width:100%;max-width:340px;display:block;margin:0 auto"></svg></section>
       <section class="card c7"><div class="card-h"><div><h2>Adherence against rescue use</h2><div class="k">Each point is a patient over 30 days. Click one to open the profile</div></div><div class="legend">${COHORTS.map((c) => `<span><i style="background:${c.id === 'asthma-p' ? '#7FB7F7' : c.color}"></i>${c.short}</span>`).join('')}</div></div><svg id="ra-sc" viewBox="0 0 640 320" style="width:100%;height:auto;display:block"></svg></section>
       <section class="card c7"><div class="card-h"><div><h2>Weekly rescue use trend</h2><div class="k">Uses per patient, last 12 weeks</div></div></div><svg id="ra-tr" viewBox="0 0 640 220" preserveAspectRatio="none" style="width:100%;height:220px;display:block"></svg></section>
-      <section class="card c5"><div class="card-h"><div><h2>Symptom-free days</h2><div class="k">Not provided by the local API</div></div></div><div class="bars" id="ra-sfd" style="height:200px;gap:8px"></div></section>
+      <section class="card c5"><div class="card-h"><div><h2>Symptom-free days</h2><div class="k">Days without rescue use, last 30 days</div></div></div><div class="bars" id="ra-sfd" style="height:200px;gap:8px"></div></section>
     </div>`;
   // radial clock
   const cx = 160,
@@ -1148,9 +1166,13 @@ PAGES['respiratory-analytics'] = () => {
     [29, 30, '29–30'],
   ];
   const sbc = sb.map(([a, b]) => sfd.filter((x) => x >= a && x <= b).length);
-  const sm = Math.max(...sbc);
-  $('#ra-sfd').innerHTML =
-    '<div class="empty"><b>Unavailable</b>The API does not record symptom-free days.</div>';
+  const sm = Math.max(...sbc, 1);
+  $('#ra-sfd').innerHTML = sb
+    .map(
+      (bin, i) =>
+        `<div class="bar ${i >= 3 ? 'h-blue' : i === 2 ? 'h-sky' : 'h-ink'}" style="height:${Math.max(8, (sbc[i] / sm) * 100)}%;border-radius:14px;cursor:default"><span class="bl">${sbc[i]}</span><span class="wk">${bin[2]}</span></div>`,
+    )
+    .join('');
   if (!RM)
     safeFrom($$('#ra-sfd .bar'), {
       scaleY: 0,

@@ -785,7 +785,8 @@ function drawTrend(animate) {
   const el = $('#bars');
   const ctrl = ST.trendMode === 'controller';
   if (window.__ADHERIUM_BOOT__.historyDays < 42) {
-    el.innerHTML = '<div class="empty"><b>Loading history</b>Six-week trends will appear as the remaining adherence history loads.</div>';
+    el.innerHTML =
+      '<div class="empty"><b>Loading history</b>Six-week trends will appear as the remaining adherence history loads.</div>';
     $('#tr-big').textContent = '…';
     $('#tr-sub').textContent = 'Loading six-week history';
     $('#tr-leg').innerHTML = '';
@@ -971,7 +972,8 @@ function drawCohorts(animate) {
     pad = 22;
   const svg = $('#lc');
   if (window.__ADHERIUM_BOOT__.historyDays < 36) {
-    svg.innerHTML = '<text x="300" y="75" text-anchor="middle" fill="var(--muted)">Loading adherence history…</text>';
+    svg.innerHTML =
+      '<text x="300" y="75" text-anchor="middle" fill="var(--muted)">Loading adherence history…</text>';
     return;
   }
   const series = COHORTS.map((c) => {

@@ -203,6 +203,7 @@ type CohortShape = {
 };
 type LegacyPatient = {
   id: string;
+  deviceId?: string;
   cohort: CohortShape;
   doses: number[];
   rescue: number[];
@@ -355,13 +356,10 @@ export async function loadBoot(
       await cachedResource(key, async () => {
         switch (name as ResourceName) {
           case 'patients':
-            return (rawData.patients = await allPages<PatientRecord>(
-              '/patients',
-            ));
+            return (rawData.patients =
+              await allPages<PatientRecord>('/patients'));
           case 'devices':
-            return (rawData.devices = await allPages<DeviceRecord>(
-              '/devices',
-            ));
+            return (rawData.devices = await allPages<DeviceRecord>('/devices'));
           case 'adherence': {
             const from = new Date();
             from.setHours(0, 0, 0, 0);
@@ -371,7 +369,10 @@ export async function loadBoot(
             );
             for (const row of rows) {
               const id = patientId(row.patient);
-              rawData.adherence.set(`${id}:${String(row.date).slice(0, 10)}`, row);
+              rawData.adherence.set(
+                `${id}:${String(row.date).slice(0, 10)}`,
+                row,
+              );
             }
             rawData.adherenceDays = Math.max(rawData.adherenceDays, days);
             return rows;
@@ -383,19 +384,17 @@ export async function loadBoot(
           case 'reports':
             return (rawData.reports = await allPages<ReportRecord>('/reports'));
           case 'imports':
-            return (rawData.imports = await allPages<ImportRecord>(
-              '/data/imports',
-            ));
+            return (rawData.imports =
+              await allPages<ImportRecord>('/data/imports'));
           case 'audit':
             return (rawData.audit = await allPages<AuditRecord>('/data/audit'));
           case 'integrations':
-            return (rawData.integrations = (
-              await api<{ items: unknown[] }>('/data/integrations')
-            ).items || []);
+            return (rawData.integrations =
+              (await api<{ items: unknown[] }>('/data/integrations')).items ||
+              []);
           case 'firmware':
-            return (rawData.firmware = (
-              await api<{ items: unknown[] }>('/data/firmware')
-            ).items || []);
+            return (rawData.firmware =
+              (await api<{ items: unknown[] }>('/data/firmware')).items || []);
           case 'events': {
             const from = new Date();
             from.setHours(0, 0, 0, 0);
@@ -432,10 +431,7 @@ export async function loadBoot(
   const resourceNames = new Set<ResourceName>(
     requested.map((resource) => resource.split(':')[0] as ResourceName),
   );
-  if (
-    resourceNames.has('adherence') ||
-    resourceNames.has('devices')
-  )
+  if (resourceNames.has('adherence') || resourceNames.has('devices'))
     resourceNames.add('patients');
   const loadedResources = [...resourceNames];
   const today = new Date();
@@ -467,6 +463,7 @@ export async function loadBoot(
     const lastSyncAt = device?.lastSyncAt || patient.lastSyncAt;
     return {
       id: patient.externalId,
+      deviceId: device?.externalId,
       cohort: cohortData[patient.cohort],
       doses,
       rescue,
