@@ -1646,6 +1646,24 @@ function reportStats(r) {
     notes: DB.notes.length,
   };
 }
+function showCsvCopyModal(filename, contents) {
+  const escaped = contents
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  const modal = openModal(
+    `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h2 style="font-size:22px;font-weight:500">Copy ${filename}</h2><p style="color:var(--muted);margin:6px 0 14px;font-size:13px">Copy the CSV contents into a spreadsheet or text file.</p></div><button class="arrow" data-close aria-label="Close">${ic('x')}</button></div><textarea id="rp-csv-content" readonly aria-label="CSV report contents" style="width:100%;height:240px;border:1px solid var(--line);border-radius:16px;padding:12px;font-size:12px;background:var(--bg);resize:vertical">${escaped}</textarea><div style="text-align:right;margin-top:12px"><button class="btn-blue" id="rp-csv-copy"><span>Copy to clipboard</span></button></div>`,
+  );
+  $('#rp-csv-copy', modal).onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(contents);
+      toast('Copied to clipboard');
+    } catch (error) {
+      $('#rp-csv-content', modal).select();
+      toast('Select the text and copy it');
+    }
+  };
+}
 PAGES.reports = () => {
   const w = $('#work');
   if (!RP.sel && DB.reports[0]) RP.sel = DB.reports[0].id;
@@ -1770,13 +1788,19 @@ PAGES.reports = () => {
         `${r.id.toLowerCase()}-${r.tpl}.md`,
         `# ${TPL[r.tpl][0]}\n\n${r.id}. Generated ${new Date(r.at).toISOString().slice(0, 10)}. Cohort: ${r.cohort}. Window: ${r.range} days. All values are synthetic demo data.\n\n| Measure | Value |\n|---|---|\n| Patients | ${s.P.length} |\n| Controller adherence | ${pct(s.adh)} |\n| On track | ${s.on} |\n| Needs follow-up | ${s.fu} |\n| Inhalers connected | ${s.conn} |\n| Inhalers offline | ${s.off} |\n| Rescue uses | ${s.res} |\n| Alerts acknowledged | ${s.ack} |\n| Care notes | ${s.notes} |\n`,
       );
-    $('#rd-csv').onclick = () =>
+    $('#rd-csv').onclick = () => {
+      const button = $('#rd-csv');
+      button.disabled = true;
       window
-        .__ADHERIUM_DOWNLOAD__(
+        .__ADHERIUM_API__(
           '/reports/' + encodeURIComponent(r.id) + '/export.csv',
-          r.id + '.csv',
         )
-        .catch((error) => window.__ADHERIUM_SHOW_ERROR__?.(error));
+        .then((contents) => showCsvCopyModal(`${r.id}.csv`, contents))
+        .catch((error) => window.__ADHERIUM_SHOW_ERROR__?.(error))
+        .finally(() => {
+          button.disabled = false;
+        });
+    };
     $('#rd-del').onclick = () =>
       window
         .__ADHERIUM_API__('/reports/' + encodeURIComponent(r.id), {

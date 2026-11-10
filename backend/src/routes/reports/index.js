@@ -25,6 +25,90 @@ const {
 } = require('../shared');
 const router = express.Router();
 
+function cohortLabel(cohort) {
+  return (
+    {
+      'asthma-adult': 'Asthma, adult',
+      'asthma-pediatric': 'Asthma, pediatric',
+      copd: 'COPD',
+    }[cohort] || cohort
+  );
+}
+
+async function reportPatientRows(
+  cohort,
+  rangeDays,
+  referenceDate = new Date(),
+  patientRecords,
+) {
+  const patientFilter =
+    cohort === 'all'
+      ? {}
+      : cohort === 'asthma'
+        ? { cohort: /^asthma/ }
+        : { cohort: 'copd' };
+  const patients =
+    patientRecords ||
+    (await Patient.find(patientFilter)
+      .select('_id externalId cohort synthetic')
+      .sort({ externalId: 1 })
+      .lean());
+  const patientIds = patients.map((patient) => patient._id);
+  const from = new Date(referenceDate.getTime() - rangeDays * 864e5);
+  const [adherence, devices] = await Promise.all([
+    AdherenceRecord.aggregate([
+      { $match: { patient: { $in: patientIds }, date: { $gte: from } } },
+      {
+        $group: {
+          _id: '$patient',
+          taken: { $sum: '$taken' },
+          scheduled: { $sum: '$scheduled' },
+          rescueUses: { $sum: '$rescueUses' },
+        },
+      },
+    ]),
+    Device.find({ patient: { $in: patientIds } })
+      .select('patient connectivity')
+      .lean(),
+  ]);
+  const adherenceByPatient = new Map(
+    adherence.map((item) => [String(item._id), item]),
+  );
+  const deviceByPatient = new Map(
+    devices.map((device) => [String(device.patient), device]),
+  );
+
+  return patients.map((patient) => {
+    const totals = adherenceByPatient.get(String(patient._id));
+    const device = deviceByPatient.get(String(patient._id));
+    return {
+      patient_id: patient.externalId,
+      cohort: cohortLabel(patient.cohort),
+      adherence: totals?.scheduled
+        ? (totals.taken / totals.scheduled).toFixed(3)
+        : '0.000',
+      rescue_uses: totals?.rescueUses || 0,
+      inhaler: device?.connectivity || 'unavailable',
+      data_status: patient.synthetic === false ? 'recorded' : 'synthetic demo',
+    };
+  });
+}
+
+function toCsv(rows) {
+  return rows
+    .map((row) =>
+      row
+        .map((value) => {
+          const text = String(value ?? '');
+          return /[",\r\n]/.test(text)
+            ? `"${text.replaceAll('"', '""')}"`
+            : text;
+        })
+        .join(','),
+    )
+    .join('\r\n');
+}
+
 router.get(
   '/reports',
   handler(async (req, res) => {
@@ -52,11 +136,12 @@ router.post(
         : cohort === 'asthma'
           ? { cohort: /^asthma/ }
           : { cohort: 'copd' };
-    const ps = await Patient.find(patientFilter).select(
-      '_id externalId cohort status battery',
-    );
+    const ps = await Patient.find(patientFilter)
+      .select('_id externalId cohort status battery synthetic')
+      .sort({ externalId: 1 });
     const pids = ps.map((p) => p._id),
-      from = new Date(Date.now() - days * 864e5);
+      createdAt = new Date(),
+      from = new Date(createdAt.getTime() - days * 864e5);
     const [a, d, alerts, notes] = await Promise.all([
       AdherenceRecord.aggregate([
         { $match: { patient: { $in: pids }, date: { $gte: from } } },
@@ -85,13 +170,14 @@ router.post(
       notes,
       generatedFrom: 'stored synthetic records',
     };
+    const patientRows = await reportPatientRows(cohort, days, createdAt, ps);
     const item = await Report.create({
       externalId: `RP-${Date.now()}`,
       type: b.type,
       cohort,
       rangeDays: days,
-      snapshot: stats,
-      createdAt: new Date(),
+      snapshot: { ...stats, patientRows },
+      createdAt,
     });
     await audit(
       `Generated ${b.type} report`,
@@ -117,12 +203,25 @@ router.get(
   handler(async (req, res) => {
     const r = await Report.findOne({ externalId: req.params.id }).lean();
     if (!r) fail('Report was not found.');
-    const rows = [['measure', 'value'], ...Object.entries(r.snapshot || {})];
-    const csv = rows
-      .map((row) =>
-        row.map((v) => `"${String(v ?? '').replaceAll('"', '""')}"`).join(','),
-      )
-      .join('\r\n');
+    const patientRows = Array.isArray(r.snapshot?.patientRows)
+      ? r.snapshot.patientRows
+      : await reportPatientRows(
+          r.cohort,
+          r.rangeDays,
+          r.createdAt ? new Date(r.createdAt) : new Date(),
+        );
+    const columns = [
+      'patient_id',
+      'cohort',
+      'adherence',
+      'rescue_uses',
+      'inhaler',
+      'data_status',
+    ];
+    const csv = toCsv([
+      columns,
+      ...patientRows.map((row) => columns.map((column) => row[column])),
+    ]);
     res.type('text/csv').attachment(`${r.externalId}.csv`).send(csv);
   }),
 );
