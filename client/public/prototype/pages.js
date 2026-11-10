@@ -1194,8 +1194,14 @@ PAGES['respiratory-analytics'] = () => {
 
 /* ======================= 7. Alerts & follow-up ======================= */
 let AL = { status: 'open', sev: 'all', kind: 'all', sel: null };
-function alertHTML(a, compact) {
-  return `<div class="alert ${AL.sel === a.id && !compact ? 'on' : ''}" data-id="${a.id}" role="button" tabindex="0"><span class="sev ${a.sev}">${ic(a.icon)}</span><span style="min-width:0"><b>${compact ? a.kind : a.p.id + ': ' + a.kind}</b><small>${a.text}. ${fmtAgo(a.mins)}</small></span>${a.status === 'open' ? `<button class="btn ${compact ? '' : 'dk'}" data-ack="${a.id}" style="height:36px;padding:0 14px">Acknowledge</button>` : `<span class="tag ${a.status === 'ack' ? '' : 'gray'}">${a.status === 'ack' ? 'Acknowledged' : 'Assigned'}</span>`}</div>`;
+function fixedLungsIcon(size) {
+  return `<span class="sev high"${size ? ` style="width:${size}px;height:${size}px"` : ''}>${ic('lungs')}</span>`;
+}
+function alertHTML(a, compact, useFixedLungsIcon = false) {
+  const icon = useFixedLungsIcon
+    ? fixedLungsIcon()
+    : `<span class="sev ${a.sev}">${ic(a.icon)}</span>`;
+  return `<div class="alert ${AL.sel === a.id && !compact ? 'on' : ''}" data-id="${a.id}" role="button" tabindex="0">${icon}<span style="min-width:0"><b>${compact ? a.kind : a.p.id + ': ' + a.kind}</b><small>${a.text}. ${fmtAgo(a.mins)}</small></span>${a.status === 'open' ? `<button class="btn ${compact ? '' : 'dk'}" data-ack="${a.id}" style="height:36px;padding:0 14px">Acknowledge</button>` : `<span class="tag ${a.status === 'ack' ? '' : 'gray'}">${a.status === 'ack' ? 'Acknowledged' : 'Assigned'}</span>`}</div>`;
 }
 PAGES.alerts = () => {
   const w = $('#work');
@@ -1234,7 +1240,7 @@ PAGES.alerts = () => {
     const L = list();
     $('#al-list').innerHTML = L.length
       ? L.slice(0, 40)
-          .map((a) => alertHTML(a))
+          .map((a) => alertHTML(a, false, true))
           .join('') +
         (L.length > 40
           ? `<div class="k" style="text-align:center">Showing 40 of ${L.length}. Narrow the filters to see more</div>`
@@ -1300,7 +1306,7 @@ PAGES.alerts = () => {
     }
     AL.sel = a.id;
     const p = a.p;
-    el.innerHTML = `<div class="card-h"><span class="sev ${a.sev}">${ic(a.icon)}</span><span class="tag ${a.sev === 'high' ? '' : 'gray'}" style="${a.sev === 'high' ? 'background:#111;color:#fff' : ''}">${{ high: 'High', med: 'Medium', low: 'Low' }[a.sev]} severity</span></div>
+    el.innerHTML = `<div class="card-h">${fixedLungsIcon()}<span class="tag ${a.sev === 'high' ? '' : 'gray'}" style="${a.sev === 'high' ? 'background:#111;color:#fff' : ''}">${{ high: 'High', med: 'Medium', low: 'Low' }[a.sev]} severity</span></div>
       <div class="k">${a.kind}</div><h2 style="font-size:24px;font-weight:500;margin:4px 0 6px">Patient ${p.id}</h2><p style="margin:0 0 16px;color:var(--muted);font-size:13.5px">${a.text}. Raised ${fmtAgo(a.mins)}.</p>
       <dl class="kv" style="margin-bottom:16px"><dt>Cohort</dt><dd>${p.cohort.short}</dd><dt>Adherence, 7 days</dt><dd>${pct(adh(p, 0, 7))}</dd><dt>Rescue uses, 7 days</dt><dd>${rescueSum(p, 0, 7)}</dd><dt>Inhaler</dt><dd>${DEV[p.status][0]}</dd>${a.by ? `<dt>${a.status === 'ack' ? 'Acknowledged by' : 'Assigned to'}</dt><dd>${a.by}</dd>` : ''}</dl>
       <div class="k" style="margin-bottom:6px">Last 14 days</div>${doseDots(p)}
@@ -1500,7 +1506,7 @@ PAGES['care-team'] = () => {
           .slice(0, 4)
           .map(
             (a) =>
-              `<div class="q" data-id="${a.p.id}" style="${i === 1 ? 'border-color:#2A2A2A' : ''}"><span class="sev ${a.sev}" style="width:30px;height:30px">${ic(a.icon)}</span><span><b>${a.p.id}</b><br><small class="k" style="${i === 1 ? 'color:#9A9A9A' : ''}">${a.kind}</small></span></div>`,
+              `<div class="q" data-id="${a.p.id}" style="${i === 1 ? 'border-color:#2A2A2A' : ''}">${fixedLungsIcon(30)}<span><b>${a.p.id}</b><br><small class="k" style="${i === 1 ? 'color:#9A9A9A' : ''}">${a.kind}</small></span></div>`,
           )
           .join('') ||
         `<div class="k" style="padding:10px 0;${i === 1 ? 'color:#9A9A9A' : ''}">Nothing assigned. Assign alerts from Alerts & Follow-up.</div>`
