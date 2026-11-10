@@ -6,6 +6,32 @@ export type ApiEnvelope<T> = {
   limit?: number;
 };
 
+const RESOURCE_CACHE_TTL = 60_000;
+const resourceCache = new Map<
+  string,
+  { expiresAt: number; promise: Promise<unknown> }
+>();
+
+function cachedResource<T>(key: string, load: () => Promise<T>): Promise<T> {
+  const cached = resourceCache.get(key);
+  if (cached && cached.expiresAt > Date.now())
+    return cached.promise as Promise<T>;
+  const promise = load().catch((error) => {
+    if (resourceCache.get(key)?.promise === promise) resourceCache.delete(key);
+    throw error;
+  });
+  resourceCache.set(key, {
+    expiresAt: Date.now() + RESOURCE_CACHE_TTL,
+    promise,
+  });
+  return promise;
+}
+
+function clearResourceCache() {
+  resourceCache.clear();
+  rawData = createRawData();
+}
+
 export async function api<T>(
   path: string,
   init?: RequestInit & { body?: unknown },
@@ -40,6 +66,7 @@ export async function api<T>(
           : `Request failed (${response.status})`;
     throw new Error(message);
   }
+  if ((rest.method || 'GET').toUpperCase() !== 'GET') clearResourceCache();
   return payload as T;
 }
 
@@ -133,6 +160,40 @@ type EventRecord = {
   occurredAt: string;
   hour?: number;
 };
+type ResourceName =
+  | 'patients'
+  | 'devices'
+  | 'adherence'
+  | 'alerts'
+  | 'notes'
+  | 'reports'
+  | 'imports'
+  | 'audit'
+  | 'integrations'
+  | 'firmware'
+  | 'events'
+  | 'overview';
+type RawData = {
+  patients?: PatientRecord[];
+  devices?: DeviceRecord[];
+  adherence: Map<string, AdherenceRecord>;
+  alerts?: AlertRecord[];
+  notes?: NoteRecord[];
+  reports?: ReportRecord[];
+  imports?: ImportRecord[];
+  audit?: AuditRecord[];
+  integrations?: unknown[];
+  firmware?: unknown[];
+  events: Map<string, EventRecord>;
+  overview?: unknown;
+  adherenceDays: number;
+};
+const createRawData = (): RawData => ({
+  adherence: new Map(),
+  events: new Map(),
+  adherenceDays: 0,
+});
+let rawData = createRawData();
 type CohortShape = {
   id: string;
   name: string;
@@ -164,6 +225,8 @@ type LegacyAlert = {
 type Boot = {
   page: string;
   patientId?: string;
+  loadedResources: ResourceName[];
+  historyDays: number;
   patients: LegacyPatient[];
   alerts: LegacyAlert[];
   db: {
@@ -257,40 +320,124 @@ export async function loadBoot(
   page: string,
   selectedPatient?: string,
 ): Promise<Boot> {
-  const health = await fetch('/health', { cache: 'no-store' });
-  if (!health.ok)
-    throw new Error(`Backend health check failed (${health.status}).`);
-  const [
-    patientRows,
-    deviceRows,
-    adherenceRows,
-    alertRows,
-    noteRows,
-    reportRows,
-    importsRows,
-    auditRows,
-    integrations,
-    firmware,
-    overview,
-    eventRows,
-  ] = await Promise.all([
-    allPages<PatientRecord>('/patients'),
-    allPages<DeviceRecord>('/devices'),
-    allPages<AdherenceRecord>(
-      `/adherence?from=${encodeURIComponent(new Date(Date.now() - 90 * 86400000).toISOString())}`,
-    ),
-    allPages<AlertRecord>('/alerts'),
-    allPages<NoteRecord>('/notes'),
-    allPages<ReportRecord>('/reports'),
-    allPages<ImportRecord>('/data/imports'),
-    allPages<AuditRecord>('/data/audit'),
-    api<{ items: unknown[] }>('/data/integrations').then((x) => x.items || []),
-    api<{ items: unknown[] }>('/data/firmware').then((x) => x.items || []),
-    api('/analytics/overview?days=90'),
-    allPages<EventRecord>(
-      `/events?type=rescue-use&from=${encodeURIComponent(new Date(Date.now() - 90 * 86400000).toISOString())}`,
-    ),
-  ]);
+  const pageResources: Record<string, string[]> = {
+    dashboard: ['patients', 'devices', 'alerts', 'adherence:7'],
+    'overview-history': ['patients', 'adherence:42'],
+    patients: ['patients', 'devices', 'alerts', 'adherence:30'],
+    'patient-profile': ['patients', 'devices', 'alerts', 'notes'],
+    devices: ['patients', 'devices'],
+    'medication-adherence': ['patients', 'adherence:30', 'events:30'],
+    'respiratory-analytics': ['patients', 'adherence:84', 'events:30'],
+    alerts: ['patients', 'devices', 'alerts'],
+    'care-team': ['patients', 'notes'],
+    reports: [
+      'patients',
+      'devices',
+      'adherence:30',
+      'alerts',
+      'notes',
+      'reports',
+    ],
+    'data-management': ['imports', 'audit', 'integrations', 'firmware'],
+  };
+  const requested = pageResources[page] || pageResources.dashboard;
+  await cachedResource('health', async () => {
+    const response = await fetch('/health', { cache: 'no-store' });
+    if (!response.ok)
+      throw new Error(`Backend health check failed (${response.status}).`);
+    return true;
+  });
+  await Promise.all(
+    requested.map(async (resource) => {
+      const [name, daysText] = resource.split(':');
+      const days = Number(daysText);
+      const key = days ? `${name}:${days}` : name;
+      await cachedResource(key, async () => {
+        switch (name as ResourceName) {
+          case 'patients':
+            return (rawData.patients = await allPages<PatientRecord>(
+              '/patients',
+            ));
+          case 'devices':
+            return (rawData.devices = await allPages<DeviceRecord>(
+              '/devices',
+            ));
+          case 'adherence': {
+            const from = new Date();
+            from.setHours(0, 0, 0, 0);
+            from.setDate(from.getDate() - days + 1);
+            const rows = await allPages<AdherenceRecord>(
+              `/adherence?from=${encodeURIComponent(from.toISOString())}`,
+            );
+            for (const row of rows) {
+              const id = patientId(row.patient);
+              rawData.adherence.set(`${id}:${String(row.date).slice(0, 10)}`, row);
+            }
+            rawData.adherenceDays = Math.max(rawData.adherenceDays, days);
+            return rows;
+          }
+          case 'alerts':
+            return (rawData.alerts = await allPages<AlertRecord>('/alerts'));
+          case 'notes':
+            return (rawData.notes = await allPages<NoteRecord>('/notes'));
+          case 'reports':
+            return (rawData.reports = await allPages<ReportRecord>('/reports'));
+          case 'imports':
+            return (rawData.imports = await allPages<ImportRecord>(
+              '/data/imports',
+            ));
+          case 'audit':
+            return (rawData.audit = await allPages<AuditRecord>('/data/audit'));
+          case 'integrations':
+            return (rawData.integrations = (
+              await api<{ items: unknown[] }>('/data/integrations')
+            ).items || []);
+          case 'firmware':
+            return (rawData.firmware = (
+              await api<{ items: unknown[] }>('/data/firmware')
+            ).items || []);
+          case 'events': {
+            const from = new Date();
+            from.setHours(0, 0, 0, 0);
+            from.setDate(from.getDate() - days + 1);
+            const rows = await allPages<EventRecord>(
+              `/events?type=rescue-use&from=${encodeURIComponent(from.toISOString())}`,
+            );
+            for (const row of rows) {
+              const id = patientId(row.patient);
+              rawData.events.set(
+                `${id}:${row.type}:${row.occurredAt}:${row.hour ?? ''}`,
+                row,
+              );
+            }
+            return rows;
+          }
+          case 'overview':
+            return (rawData.overview = await api(
+              '/analytics/overview?days=90',
+            ));
+        }
+      });
+    }),
+  );
+  const patientRows = rawData.patients || [];
+  const deviceRows = rawData.devices || [];
+  const adherenceRows = [...rawData.adherence.values()];
+  const alertRows = rawData.alerts || [];
+  const noteRows = rawData.notes || [];
+  const reportRows = rawData.reports || [];
+  const importsRows = rawData.imports || [];
+  const auditRows = rawData.audit || [];
+  const eventRows = [...rawData.events.values()];
+  const resourceNames = new Set<ResourceName>(
+    requested.map((resource) => resource.split(':')[0] as ResourceName),
+  );
+  if (
+    resourceNames.has('adherence') ||
+    resourceNames.has('devices')
+  )
+    resourceNames.add('patients');
+  const loadedResources = [...resourceNames];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const deviceByPatient = new Map(
@@ -357,6 +504,8 @@ export async function loadBoot(
   return {
     page,
     patientId: selectedPatient,
+    loadedResources,
+    historyDays: rawData.adherenceDays,
     patients,
     alerts,
     events: eventRows.map((event) => ({
@@ -407,9 +556,9 @@ export async function loadBoot(
         at: row.createdAt,
       })),
     },
-    integrations,
-    firmware,
-    overview,
+    integrations: rawData.integrations || [],
+    firmware: rawData.firmware || [],
+    overview: rawData.overview,
   };
 }
 

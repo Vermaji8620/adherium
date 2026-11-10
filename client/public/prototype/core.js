@@ -347,7 +347,9 @@ function placePill() {
   ind.style.width = on.offsetWidth + 'px';
 }
 $$('.pill-nav').forEach((b) => (b.onclick = () => go(b.dataset.p)));
+let navigationRequest = 0;
 function go(p) {
+  const request = ++navigationRequest;
   ST.page = p;
   closeAll();
   renderNav();
@@ -355,31 +357,27 @@ function go(p) {
   if (route) history.replaceState(null, '', route);
   const w = $('#work');
   document.title = 'Adherium · ' + (TITLES[p] || 'Overview');
-  const show = () => {
+  const show = async () => {
     hideTip();
-    if (p === 'patient-profile' && window.__ADHERIUM_LOAD_PROFILE__) {
-      window
-        .__ADHERIUM_LOAD_PROFILE__(ST.patient)
-        .then(() => {
-          if (window.PAGES && PAGES[p]) PAGES[p]();
-        })
-        .catch((error) => window.__ADHERIUM_SHOW_ERROR__?.(error));
-    } else if (window.PAGES && PAGES[p]) PAGES[p]();
-    else renderDashboard(true);
+    w.innerHTML = `<section class="card" style="margin:20px;padding:24px"><h2>Loading ${TITLES[p] || 'page'}</h2><p style="color:var(--muted);margin-top:8px">Fetching this screen’s data…</p></section>`;
+    w.style.opacity = '1';
+    w.style.transform = 'none';
+    try {
+      await window.__ADHERIUM_ENSURE_PAGE_DATA__?.(p);
+      if (request !== navigationRequest) return;
+      if (p === 'patient-profile' && window.__ADHERIUM_LOAD_PROFILE__) {
+        await window.__ADHERIUM_LOAD_PROFILE__(ST.patient);
+        if (request !== navigationRequest) return;
+        if (window.PAGES && PAGES[p]) PAGES[p]();
+      } else if (window.PAGES && PAGES[p]) PAGES[p]();
+      else renderDashboard(true);
+    } catch (error) {
+      window.__ADHERIUM_SHOW_ERROR__?.(error);
+      return;
+    }
     $('#work').scrollTop = 0;
     scrollTo({ top: 0 });
-  };
-  if (RM) {
-    show();
-    return;
-  }
-  gsap.to(w, {
-    opacity: 0,
-    y: 6,
-    duration: 0.18,
-    ease: 'power2.in',
-    onComplete: () => {
-      show();
+    if (!RM)
       safeFromTo(
         w,
         { opacity: 0, y: 10 },
@@ -391,7 +389,17 @@ function go(p) {
           clearProps: 'transform',
         },
       );
-    },
+  };
+  if (RM) {
+    void show();
+    return;
+  }
+  gsap.to(w, {
+    opacity: 0,
+    y: 6,
+    duration: 0.18,
+    ease: 'power2.in',
+    onComplete: () => void show(),
   });
 }
 function renderPending(p) {
@@ -776,6 +784,13 @@ function drawTrend(animate) {
   const P = pool();
   const el = $('#bars');
   const ctrl = ST.trendMode === 'controller';
+  if (window.__ADHERIUM_BOOT__.historyDays < 42) {
+    el.innerHTML = '<div class="empty"><b>Loading history</b>Six-week trends will appear as the remaining adherence history loads.</div>';
+    $('#tr-big').textContent = '…';
+    $('#tr-sub').textContent = 'Loading six-week history';
+    $('#tr-leg').innerHTML = '';
+    return;
+  }
   const weeks = [5, 4, 3, 2, 1, 0].map((k) => {
     const v = ctrl
       ? P.reduce((a, p) => a + adh(p, k * 7, k * 7 + 7), 0) / P.length
@@ -955,6 +970,10 @@ function drawCohorts(animate) {
     H = 150,
     pad = 22;
   const svg = $('#lc');
+  if (window.__ADHERIUM_BOOT__.historyDays < 36) {
+    svg.innerHTML = '<text x="300" y="75" text-anchor="middle" fill="var(--muted)">Loading adherence history…</text>';
+    return;
+  }
   const series = COHORTS.map((c) => {
     const ps = PATIENTS.filter((p) => p.cohort.id === c.id);
     const daily = Array.from({ length: 36 }, (_, i) => {
@@ -1211,4 +1230,7 @@ $('#mnav').onclick = () => {
 addEventListener('resize', placePill);
 
 $('#greet').innerHTML = ROLES.provider[2];
+window.__ADHERIUM_REFRESH_OVERVIEW__ = () => {
+  if (ST.page === 'dashboard') renderDashboard(false);
+};
 document.fonts && document.fonts.ready.then(placePill);

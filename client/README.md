@@ -52,6 +52,9 @@ The shared root layout keeps the prototype shell mounted across navigation. The 
 
 ## Frontend data and rendering
 
+- The initial load requests only Overview data: patients, devices, alerts, and the last seven days of adherence. The shell appears immediately with a loading state while those requests complete.
+- The Overview renders its recent data first. Six-week trend and cohort history loads in the background; those charts show a loading state until the history arrives.
+- Other screens load their API resources the first time they are opened. The client keeps successful resource requests in memory for 60 seconds, shares in-flight requests, and clears that cache after successful API mutations.
 - `src/lib/api.ts` fetches and adapts the backend records for the prototype screens. Cohorts are matched by stable cohort IDs, rather than object identity, so API-backed patients appear in cohort summaries and charts.
 - Patient profile data is loaded before its screen is rendered. If a patient has no rescue-use events, the timeline remains empty without trying to animate missing SVG points.
 - Adherence charts skip unrecorded days and show gaps where data is missing. Empty data ranges use safe chart bounds, preventing `NaN` SVG coordinates.
