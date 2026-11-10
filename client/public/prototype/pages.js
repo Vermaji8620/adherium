@@ -123,7 +123,7 @@ function rescueHours(p, days) {
         event.type === 'rescue-use' &&
         new Date(event.occurredAt).getTime() >= from,
     )
-    .map((event) => event.hour ?? new Date(event.occurredAt).getHours());
+    .map((event) => event.hour ?? new Date(event.occurredAt).getUTCHours());
 }
 
 /* ======================= alerts model ======================= */
@@ -374,7 +374,7 @@ PAGES['patient-profile'] = () => {
   // calendar: last 35 days aligned to weekdays
   const cal = $('#pp-cal');
   const start = new Date(TODAY.getTime() - 34 * 864e5);
-  const lead = (start.getDay() + 6) % 7;
+  const lead = (start.getUTCDay() + 6) % 7;
   cal.innerHTML =
     ['M', 'T', 'W', 'T', 'F', 'S', 'S']
       .map((d) => `<span class="wd">${d}</span>`)
@@ -421,13 +421,13 @@ PAGES['patient-profile'] = () => {
     const y = 18 + d * 13;
     svg += `<text x="0" y="${y + 4}" font-size="10" fill="var(--muted)">${d === 0 ? 'Today' : d === 13 ? '13 d' : ''}</text><line x1="40" x2="680" y1="${y}" y2="${y}" stroke="var(--off)"/>`;
     const date = new Date();
-    date.setHours(0, 0, 0, 0);
-    date.setDate(date.getDate() - d);
+    date.setUTCHours(0, 0, 0, 0);
+    date.setUTCDate(date.getUTCDate() - d);
     const key = date.toISOString().slice(0, 10);
     for (const event of events.filter(
       (item) => String(item.occurredAt).slice(0, 10) === key,
     )) {
-      const hr = event.hour ?? new Date(event.occurredAt).getHours();
+      const hr = event.hour ?? new Date(event.occurredAt).getUTCHours();
       svg += `<circle class="tld" cx="${40 + (hr / 24) * 640}" cy="${y}" r="5.5" fill="${hr < 6 ? '#111' : '#087BFF'}"><title>${dayLong(d)}, ${String(Math.floor(hr)).padStart(2, '0')}:${String(Math.floor((hr % 1) * 60)).padStart(2, '0')}</title></circle>`;
     }
   }
@@ -863,7 +863,7 @@ PAGES['medication-adherence'] = () => {
   // calendar
   const cal = $('#ma-cal');
   const start = new Date(TODAY.getTime() - 34 * 864e5);
-  const lead = (start.getDay() + 6) % 7;
+  const lead = (start.getUTCDay() + 6) % 7;
   cal.innerHTML =
     ['M', 'T', 'W', 'T', 'F', 'S', 'S']
       .map((d) => `<span class="wd">${d}</span>`)
@@ -873,7 +873,7 @@ PAGES['medication-adherence'] = () => {
       const off = 34 - i;
       const v = dayRate(off);
       const d = new Date(TODAY.getTime() - off * 864e5);
-      return `<button class="cday ${v >= 0.85 ? 'h-blue' : v >= 0.75 ? 'h-sky' : 'h-ink'} ${MA.sel === off ? 'sel' : ''}" data-off="${off}" aria-label="${dayLong(off)}: ${pct(v)}">${d.getDate()}</button>`;
+      return `<button class="cday ${v >= 0.85 ? 'h-blue' : v >= 0.75 ? 'h-sky' : 'h-ink'} ${MA.sel === off ? 'sel' : ''}" data-off="${off}" aria-label="${dayLong(off)}: ${pct(v)}">${d.getUTCDate()}</button>`;
     }).join('');
   $$('.cday[data-off]', cal).forEach((b) => {
     const off = +b.dataset.off;
@@ -944,7 +944,7 @@ PAGES['medication-adherence'] = () => {
       n = 0;
     for (let off = 0; off < 56; off++) {
       const d = new Date(TODAY.getTime() - off * 864e5);
-      if ((d.getDay() + 6) % 7 === k) {
+      if ((d.getUTCDay() + 6) % 7 === k) {
         t += dayRate(off);
         n++;
       }
@@ -1652,7 +1652,7 @@ function showCsvCopyModal(filename, contents) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
   const modal = openModal(
-    `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h2 style="font-size:22px;font-weight:500">Copy ${filename}</h2><p style="color:var(--muted);margin:6px 0 14px;font-size:13px">Copy the CSV contents into a spreadsheet or text file.</p></div><button class="arrow" data-close aria-label="Close">${ic('x')}</button></div><textarea id="rp-csv-content" readonly aria-label="CSV report contents" style="width:100%;height:240px;border:1px solid var(--line);border-radius:16px;padding:12px;font-size:12px;background:var(--bg);resize:vertical">${escaped}</textarea><div style="text-align:right;margin-top:12px"><button class="btn-blue" id="rp-csv-copy"><span>Copy to clipboard</span></button></div>`,
+    `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h2 style="font-size:22px;font-weight:500">Copy ${filename}</h2><p style="color:var(--muted);margin:6px 0 14px;font-size:13px">File saving isn’t available in this view. Copy the contents into a file with this name.</p></div><button class="arrow" data-close aria-label="Close">${ic('x')}</button></div><textarea id="rp-csv-content" readonly aria-label="CSV report contents" style="width:100%;height:240px;border:1px solid var(--line);border-radius:16px;padding:12px;font-size:12px;background:var(--bg);resize:vertical">${escaped}</textarea><div style="text-align:right;margin-top:12px"><button class="btn-blue" id="rp-csv-copy"><span>Copy to clipboard</span></button></div>`,
   );
   $('#rp-csv-copy', modal).onclick = async () => {
     try {
@@ -1670,7 +1670,7 @@ PAGES.reports = () => {
   w.innerHTML =
     head('Reports & Insights', 'Reports', '') +
     `
-    <div class="grid" style="margin-bottom:16px">${Object.entries(TPL)
+    <div class="grid report-templates" role="region" aria-label="Report templates" style="margin-bottom:16px">${Object.entries(TPL)
       .map(
         ([k, [t, d, c]]) =>
           `<button class="tpl ${c} c3" data-t="${k}" style="grid-column:span 3"><span style="display:flex;justify-content:space-between;width:100%"><span class="wcirc ${c ? '' : 'g'}" style="${c ? '' : 'background:var(--bg);color:var(--text)'}">${ic('doc')}</span><span class="wcirc" style="${c ? '' : 'background:var(--ink);color:#fff'}">${ic('arrow')}</span></span><h3>${t}</h3><small>${d}</small></button>`,
@@ -1921,7 +1921,7 @@ PAGES['data-management'] = () => {
         )}<button class="btn" id="dm-fw" style="margin-top:4px">Schedule update for older sensors</button></section>
       <section class="card c4"><div class="card-h"><h2>Import enrollment</h2></div><label class="drop" id="dm-drop"><input type="file" accept=".csv,text/csv" id="dm-file" hidden><b>Drop a CSV or browse</b>Columns: patient_id, cohort. Validated by the local API; enrollment is not performed</label>
         <button class="btn" id="dm-sample" style="margin-top:10px;width:100%">Use a sample file with errors</button><div id="dm-res" style="margin-top:10px"></div></section>
-      <section class="card c6"><div class="card-h"><h2>Import history</h2></div><table class="rt"><thead><tr><th>Import</th><th class="r">Rows</th><th>Status</th><th>Date</th></tr></thead><tbody id="dm-imp"></tbody></table></section>
+      <section class="card c6"><div class="card-h"><h2>Import history</h2></div><table class="rt import-history-table"><thead><tr><th>Import</th><th class="r">Rows</th><th>Status</th><th>Date</th></tr></thead><tbody id="dm-imp"></tbody></table></section>
       <section class="card c6"><div class="card-h"><h2>Audit log</h2><span class="k">Actions recorded by the local API</span></div><div id="dm-audit"></div></section>
     </div>`;
   const imp = () => {

@@ -208,11 +208,11 @@ export default function PrototypeExperience({
           );
           if (patient) {
             const now = new Date();
-            now.setHours(0, 0, 0, 0);
+            now.setUTCHours(0, 0, 0, 0);
             const dates = profile.adherence || [];
             for (const record of dates) {
               const day = new Date(
-                `${String(record.date).slice(0, 10)}T00:00:00`,
+                `${String(record.date).slice(0, 10)}T00:00:00Z`,
               );
               const offset = Math.round(
                 (now.getTime() - day.getTime()) / 86400000,

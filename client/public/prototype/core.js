@@ -62,16 +62,17 @@ const DAYS = 90; // history kept per patient
 const PATIENTS = window.__ADHERIUM_BOOT__.patients;
 window.__ADHERIUM_PATIENTS__ = PATIENTS;
 const TODAY = new Date();
-TODAY.setHours(0, 0, 0, 0);
+TODAY.setUTCHours(0, 0, 0, 0);
 const dayName = (off) =>
   new Date(TODAY.getTime() - off * 864e5)
-    .toLocaleDateString('en-US', { weekday: 'short' })
+    .toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' })
     .slice(0, 1);
 const dayLong = (off) =>
   new Date(TODAY.getTime() - off * 864e5).toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'short',
     day: 'numeric',
+    timeZone: 'UTC',
   });
 const adh = (p, from, to) => {
   let t = 0,
@@ -1146,7 +1147,7 @@ function reportData() {
 function reportPreview() {
   const d = reportData();
   const m =
-    openModal(`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><div style="color:var(--muted);font-size:13px">Week ending ${TODAY.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}. Synthetic demo data</div><h2 style="font-size:26px;font-weight:500;margin-top:4px">Weekly adherence report</h2></div><button class="arrow" data-close aria-label="Close">${ic('x')}</button></div>
+    openModal(`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><div style="color:var(--muted);font-size:13px">Week ending ${TODAY.toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'UTC' })}. Synthetic demo data</div><h2 style="font-size:26px;font-weight:500;margin-top:4px">Weekly adherence report</h2></div><button class="arrow" data-close aria-label="Close">${ic('x')}</button></div>
     <dl class="kv" style="margin:22px 0"><dt>Patients monitored</dt><dd>${d.P.length}</dd><dt>Controller adherence</dt><dd>${pct(d.a)}</dd><dt>On track</dt><dd>${d.on}</dd><dt>Needs follow-up</dt><dd>${d.fu}</dd><dt>Inhalers offline</dt><dd>${d.off}</dd><dt>Events needing action</dt><dd>${d.ev}</dd></dl>
     <div style="display:flex;justify-content:flex-end"><button class="btn-blue" id="m-dl"><span>Export report</span><i>${ic('export')}</i></button></div>`);
   $('#m-dl', m).onclick = exportReport;

@@ -362,8 +362,8 @@ export async function loadBoot(
             return (rawData.devices = await allPages<DeviceRecord>('/devices'));
           case 'adherence': {
             const from = new Date();
-            from.setHours(0, 0, 0, 0);
-            from.setDate(from.getDate() - days + 1);
+            from.setUTCHours(0, 0, 0, 0);
+            from.setUTCDate(from.getUTCDate() - days + 1);
             const rows = await allPages<AdherenceRecord>(
               `/adherence?from=${encodeURIComponent(from.toISOString())}`,
             );
@@ -397,8 +397,8 @@ export async function loadBoot(
               (await api<{ items: unknown[] }>('/data/firmware')).items || []);
           case 'events': {
             const from = new Date();
-            from.setHours(0, 0, 0, 0);
-            from.setDate(from.getDate() - days + 1);
+            from.setUTCHours(0, 0, 0, 0);
+            from.setUTCDate(from.getUTCDate() - days + 1);
             const rows = await allPages<EventRecord>(
               `/events?type=rescue-use&from=${encodeURIComponent(from.toISOString())}`,
             );
@@ -435,7 +435,7 @@ export async function loadBoot(
     resourceNames.add('patients');
   const loadedResources = [...resourceNames];
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  today.setUTCHours(0, 0, 0, 0);
   const deviceByPatient = new Map(
     deviceRows.map((device) => [patientId(device.patient), device]),
   );
@@ -453,7 +453,7 @@ export async function loadBoot(
     const rescue = Array(90).fill(Number.NaN) as number[];
     for (const record of daily) {
       const key = String(record.date).slice(0, 10);
-      const date = new Date(`${key}T00:00:00`);
+      const date = new Date(`${key}T00:00:00Z`);
       const offset = Math.round((today.getTime() - date.getTime()) / 86400000);
       if (offset >= 0 && offset < 90) {
         doses[89 - offset] = record.taken;
