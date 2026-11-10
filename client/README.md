@@ -78,7 +78,7 @@ The UI calls the existing `/api/v1` endpoints through Next rewrites:
 
 The app fetches API data only; it does not generate patient, adherence, event, alert, note, import, report, or device rows in the browser. Missing adherence samples remain unrecorded in the UI math. Symptom-free-day values are unavailable because the backend does not supply them.
 
-Device sync and firmware scheduling are explicitly simulated by backend endpoints. CSV validation records a validation result only; it does not enroll or import patients. Integration statuses are display records and no external system is contacted. Authentication is not implemented; use this application only with the local synthetic-data backend.
+Device sync and firmware scheduling are explicitly simulated by backend endpoints. Fleet sync returns to its idle display after the request; a toast reports how many simulated requests were recorded and clarifies that no inhalers were contacted. CSV validation records a validation result only; it does not enroll or import patients. Integration statuses are display records and no external system is contacted. Authentication is not implemented; use this application only with the local synthetic-data backend.
 
 ## Checks
 

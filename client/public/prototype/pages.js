@@ -723,28 +723,47 @@ PAGES.devices = () => {
   );
   $('#dv-all').onclick = (e) => {
     const button = e.currentTarget;
+    const targets = PATIENTS.filter((p) => p.status !== 'connected');
+    if (!targets.length) {
+      toast('Every inhaler is already connected');
+      return;
+    }
     button.disabled = true;
     const hero = $('#dv-hero');
-    $('.progress', hero).style.opacity = 1;
+    const progress = $('.progress', hero);
+    const bar = $('i', progress);
+    const message = $('#dv-msg');
+    progress.style.opacity = 1;
+    bar.style.width = '0%';
     $('.device-ill', hero).classList.add('syncing');
-    $('#dv-msg').textContent = 'Recording simulated fleet sync request';
+    message.textContent = 'Recording simulated fleet sync request';
     gsap.to($('.progress i', hero), {
       width: '100%',
-      duration: RM ? 0.01 : 0.6,
+      duration: RM ? 0.01 : 2.4,
       onComplete: () =>
         window
           .__ADHERIUM_API__('/devices/sync', { method: 'POST', body: {} })
           .then((result) => {
             button.disabled = false;
             $('.device-ill', hero).classList.remove('syncing');
-            $('#dv-msg').textContent = result.message;
+            progress.style.opacity = 0;
+            bar.style.width = '0%';
+            message.textContent =
+              'Request a sync for every inhaler that is pending or offline.';
             audit();
-            toast(result.message);
+            const requested = Number(result.requested) || 0;
+            toast(
+              requested
+                ? `${requested} device${requested === 1 ? '' : 's'} queued for simulated sync. No inhalers were contacted.`
+                : 'No new sync requests were recorded. No inhalers were contacted.',
+            );
           })
           .catch((error) => {
             button.disabled = false;
             $('.device-ill', hero).classList.remove('syncing');
-            $('#dv-msg').textContent = error.message;
+            progress.style.opacity = 0;
+            bar.style.width = '0%';
+            message.textContent = error.message;
             window.__ADHERIUM_SHOW_ERROR__?.(error);
           }),
     });
