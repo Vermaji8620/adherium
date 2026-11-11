@@ -1,6 +1,6 @@
 const { config } = require('./config');
 const { connect } = require('./db');
-const { createApp } = require('./app');
+const { createApp } = require('./create-app');
 (async () => {
   const c = config();
   try {

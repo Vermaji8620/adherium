@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Local synthetic-data API foundation for the Adherium respiratory-monitoring prototype",
-  "main": "src/server.js",
+  "main": "src/index.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
