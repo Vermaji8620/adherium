@@ -24,6 +24,7 @@ declare global {
       rescue: number[];
     }>;
     __ADHERIUM_API__: typeof api;
+    __ADHERIUM_LOGOUT__?: () => Promise<void>;
     __ADHERIUM_DOWNLOAD__: (path: string, filename: string) => Promise<void>;
     PAGES?: Record<string, () => void>;
     __ADHERIUM_RENDER_AUDIT__?: () => void;
@@ -172,6 +173,16 @@ export default function PrototypeExperience({
       root.style.visibility = 'visible';
     };
     window.__ADHERIUM_SHOW_ERROR__ = notifyError;
+    window.__ADHERIUM_LOGOUT__ = async () => {
+      try {
+        await api<{ authenticated: boolean }>('/auth/logout', {
+          method: 'POST',
+        });
+        router.replace('/login');
+      } catch (error) {
+        notifyError(error);
+      }
+    };
 
     void loadBoot(route.page, route.patientId)
       .then(async (boot) => {

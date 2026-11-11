@@ -26,6 +26,7 @@ export default function LoginForm({
 }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState(
     showUnauthenticatedMessage
       ? 'You are not authenticated. Sign in to continue.'
@@ -160,14 +161,21 @@ export default function LoginForm({
                         className={styles.input}
                         id="password"
                         name="password"
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         autoComplete="current-password"
                         placeholder="At least 8 characters"
                         value={password}
                         onChange={(event) => setPassword(event.target.value)}
                         required
                       />
-                      <span className={styles.eye} aria-hidden="true">
+                      <button
+                        className={styles.eye}
+                        type="button"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        aria-pressed={showPassword}
+                        aria-controls="password"
+                        onClick={() => setShowPassword((visible) => !visible)}
+                      >
                         <svg
                           viewBox="0 0 24 24"
                           fill="none"
@@ -175,11 +183,12 @@ export default function LoginForm({
                           strokeWidth="1.7"
                           strokeLinecap="round"
                           strokeLinejoin="round"
+                          aria-hidden="true"
                         >
                           <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
                           <circle cx="12" cy="12" r="3" />
                         </svg>
-                      </span>
+                      </button>
                     </div>
                   </div>
                   {message ? (

@@ -189,19 +189,21 @@ function menu(anchor, title, opts, cur, onPick) {
     opts
       .map(
         ([v, l]) =>
-          `<button role="option" data-v="${v}" class="${v === cur ? 'on' : ''}">${l}</button>`,
+          `<button role="option" data-v="${v}" class="${v === cur ? 'on' : ''} ${v === '__out' ? 'menu-logout' : ''}">${l}</button>`,
       )
       .join('');
   document.body.appendChild(m);
-  const w = m.offsetWidth,
-    mh = m.offsetHeight;
-  m.style.left = clamp(r.right - w, 8, innerWidth - w - 8) + 'px';
+  const w = Math.min(m.offsetWidth, Math.max(0, innerWidth - 16));
+  m.style.width = `${w}px`;
+  m.style.maxHeight = Math.max(0, innerHeight - 16) + 'px';
+  m.style.overflowY = 'auto';
+  const mh = m.offsetHeight;
+  m.style.left =
+    clamp(r.right - w, 8, Math.max(8, innerWidth - w - 8)) + 'px';
   m.style.top =
     (r.bottom + 8 + mh > innerHeight - 8
       ? Math.max(8, r.top - mh - 8)
       : r.bottom + 8) + 'px';
-  m.style.maxHeight = innerHeight - 16 + 'px';
-  m.style.overflowY = 'auto';
   if (!RM)
     safeFrom(m, {
       opacity: 0,
@@ -1194,9 +1196,15 @@ $('#acct').onclick = (e) =>
   menu(
     e.currentTarget,
     'Viewing as',
-    Object.entries(ROLES).map(([k, [l]]) => [k, l]),
+    [
+      ...Object.entries(ROLES).map(([k, [l]]) => [k, l]),
+      ['__out', 'Log out'],
+    ],
     ST.role,
-    setRole,
+    (value) => {
+      if (value === '__out') void window.__ADHERIUM_LOGOUT__?.();
+      else setRole(value);
+    },
   );
 $('#settings').onclick = (e) =>
   menu(
