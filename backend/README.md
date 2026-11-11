@@ -1,6 +1,6 @@
 # Adherium backend foundation
 
-Standalone Express + Mongoose API for a synthetic-data review of the respiratory-monitoring prototype. It does not connect to Hailie devices or an EHR, and it is not a clinical system. Every page-data endpoint under `/api/v1` requires a signed session. The server remains bound to localhost by default.
+Express + Mongoose API for a synthetic-data review of the respiratory-monitoring prototype. It does not connect to Hailie devices or an EHR, and it is not a clinical system. Every page-data endpoint under `/api/v1` requires a signed session. Run `npm start` for local development; `src/index.js` is the Vercel Express entry point and connects to MongoDB on demand using `MONGODB_URI`.
 
 Structure: `src/config.js` environment configuration; `src/auth/` password hashing and signed sessions; `src/db.js` MongoDB connection; `src/models/` Mongoose models and indexes; `src/routes/<resource>/index.js` resource routes, with `src/routes/index.js` mounting them and `src/routes/shared.js` holding common helpers; `src/services/analytics.js` server-side dashboard aggregation; `src/validation.js` request/query validation; `src/seed/` deterministic generator and opt-in upsert runner; `test/` focused checks.
 

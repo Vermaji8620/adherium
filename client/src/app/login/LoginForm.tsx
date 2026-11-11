@@ -171,7 +171,9 @@ export default function LoginForm({
                       <button
                         className={styles.eye}
                         type="button"
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        aria-label={
+                          showPassword ? 'Hide password' : 'Show password'
+                        }
                         aria-pressed={showPassword}
                         aria-controls="password"
                         onClick={() => setShowPassword((visible) => !visible)}

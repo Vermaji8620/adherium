@@ -198,8 +198,7 @@ function menu(anchor, title, opts, cur, onPick) {
   m.style.maxHeight = Math.max(0, innerHeight - 16) + 'px';
   m.style.overflowY = 'auto';
   const mh = m.offsetHeight;
-  m.style.left =
-    clamp(r.right - w, 8, Math.max(8, innerWidth - w - 8)) + 'px';
+  m.style.left = clamp(r.right - w, 8, Math.max(8, innerWidth - w - 8)) + 'px';
   m.style.top =
     (r.bottom + 8 + mh > innerHeight - 8
       ? Math.max(8, r.top - mh - 8)
@@ -1196,10 +1195,7 @@ $('#acct').onclick = (e) =>
   menu(
     e.currentTarget,
     'Viewing as',
-    [
-      ...Object.entries(ROLES).map(([k, [l]]) => [k, l]),
-      ['__out', 'Log out'],
-    ],
+    [...Object.entries(ROLES).map(([k, [l]]) => [k, l]), ['__out', 'Log out']],
     ST.role,
     (value) => {
       if (value === '__out') void window.__ADHERIUM_LOGOUT__?.();

@@ -164,12 +164,10 @@ export default function PrototypeExperience({
         return;
       }
       const message =
-        error instanceof Error
-          ? error.message
-          : 'The local API request failed.';
+        error instanceof Error ? error.message : 'The API request failed.';
       const work = root.querySelector<HTMLElement>('#work');
       if (work)
-        work.innerHTML = `<section class="card" style="margin:20px;padding:24px"><h2>Unable to load workspace data</h2><p style="color:var(--muted);margin-top:8px">${message.replaceAll('<', '&lt;')}</p><p style="color:var(--muted);margin-top:8px">Start the Adherium backend and check BACKEND_API_URL in client/.env.local.</p><button class="btn" onclick="location.reload()" style="margin-top:14px">Retry</button></section>`;
+        work.innerHTML = `<section class="card" style="margin:20px;padding:24px"><h2>Unable to load workspace data</h2><p style="color:var(--muted);margin-top:8px">${message.replaceAll('<', '&lt;')}</p><p style="color:var(--muted);margin-top:8px">Confirm the backend is available and BACKEND_API_URL is set in the deployment environment.</p><button class="btn" onclick="location.reload()" style="margin-top:14px">Retry</button></section>`;
       root.style.visibility = 'visible';
     };
     window.__ADHERIUM_SHOW_ERROR__ = notifyError;
