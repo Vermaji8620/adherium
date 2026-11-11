@@ -1,4 +1,3 @@
-const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const { notFound, errors } = require('./middleware');
@@ -7,6 +6,7 @@ const { config } = require('./config');
 const { requireAuth } = require('./middleware/authentication');
 const { createAuthRouter } = require('./routes/auth');
 function createApp(options = {}) {
+  const express = options.express || require('express');
   const app = express();
   const auth = options.auth || config().auth;
   const protectedApi = options.apiRouter || api;
