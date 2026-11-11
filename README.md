@@ -41,7 +41,7 @@ PORT=4000
 NODE_ENV=development
 ```
 
-Keep credentials private and do not commit `.env.local`. The backend does not seed the database on startup; it serves the records already present in the configured database.
+Before starting the backend, configure `AUTH_EMAIL`, `AUTH_PASSWORD_HASH`, and `AUTH_SECRET` in the same file. Generate the password hash with `npm run auth:hash` from `backend/`, and generate a random 32-byte `AUTH_SECRET` as described in [backend/README.md](backend/README.md#authentication-setup). Keep credentials private and do not commit `.env.local`. The backend does not seed the database on startup; it serves the records already present in the configured database.
 
 ## Start the backend
 
@@ -65,7 +65,7 @@ npm ci
 npm run dev
 ```
 
-Open <http://localhost:3000/overview>. The other screens are available at `/patients`, `/patient-profile`, `/devices`, `/medication-adherence`, `/analytics`, `/alerts`, `/care-team`, `/reports`, and `/data-management`.
+Open <http://localhost:3000/login> and sign in with the configured account. The other screens are available at `/overview`, `/patients`, `/patient-profile`, `/devices`, `/medication-adherence`, `/analytics`, `/alerts`, `/care-team`, `/reports`, and `/data-management` after authentication.
 
 For the default local setup, no client environment file is needed: `client/next.config.ts` proxies `/api/*` and `/health` to `http://127.0.0.1:4000`. If the backend listens at another origin, create `client/.env.local` with the backend origin (without `/api/v1`), for example:
 
@@ -77,6 +77,6 @@ Restart the Next.js dev server after changing this value.
 
 ## Stop the applications
 
-Press `Ctrl+C` in each terminal. Keep the backend bound to localhost; authentication is not implemented.
+Press `Ctrl+C` in each terminal. The backend stays bound to localhost by default; all page-data APIs require an authenticated session.
 
 For API details and backend-specific notes, see [backend/README.md](backend/README.md). For frontend architecture and screen details, see [client/README.md](client/README.md).

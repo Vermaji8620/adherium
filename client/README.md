@@ -20,9 +20,13 @@ npm install
 npm run dev
 ```
 
-If `.env.local` already exists, keep it and set `BACKEND_API_URL=http://127.0.0.1:4000`. Browse to <http://localhost:3000/overview>. The backend health route is <http://127.0.0.1:4000/health>.
+If `.env.local` already exists, keep it and set `BACKEND_API_URL=http://127.0.0.1:4000`. Browse to <http://localhost:3000/login>; successful sign-in opens the Overview. The backend health route is <http://127.0.0.1:4000/health>.
 
 The backend URL is read by `next.config.ts` on the server and proxied through Next rewrites for `/api/*` and `/health`.
+
+## Authentication
+
+The `/login` screen signs in using the operator account configured in `backend/.env.local`. The Next.js Proxy checks the backend session before rendering dashboard pages, and the Express API independently checks the signed, HTTP-only session cookie on every `/api/v1` data route. Unauthenticated page visits return to `/login` with a clear message, and unauthenticated API calls receive a `401` response. Use the backend README's authentication setup before signing in.
 
 ## Prototype sources reused
 
@@ -79,7 +83,7 @@ The UI calls the existing `/api/v1` endpoints through Next rewrites:
 
 The app fetches API data only; it does not generate patient, adherence, event, alert, note, import, report, or device rows in the browser. Missing adherence samples remain unrecorded in the UI math. Symptom-free days are derived from adherence records as days with zero rescue uses; the backend stores these daily `rescueUses` values rather than a separate symptom-free-days field.
 
-Device sync and firmware scheduling are explicitly simulated by backend endpoints. Fleet sync returns to its idle display after the request; a toast reports how many simulated requests were recorded and clarifies that no inhalers were contacted. CSV validation records a validation result only; it does not enroll or import patients. Integration statuses are display records and no external system is contacted. Authentication is not implemented; use this application only with the local synthetic-data backend.
+Device sync and firmware scheduling are explicitly simulated by backend endpoints. Fleet sync returns to its idle display after the request; a toast reports how many simulated requests were recorded and clarifies that no inhalers were contacted. CSV validation records a validation result only; it does not enroll or import patients. Integration statuses are display records and no external system is contacted. The authentication setup currently supports one environment-configured operator account; it is intended for this synthetic-data workspace, which is not a clinical system.
 
 ## Checks
 

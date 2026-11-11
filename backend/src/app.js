@@ -3,8 +3,13 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const { notFound, errors } = require('./middleware');
 const { api } = require('./routes');
-function createApp() {
+const { config } = require('./config');
+const { requireAuth } = require('./middleware/authentication');
+const { createAuthRouter } = require('./routes/auth');
+function createApp(options = {}) {
   const app = express();
+  const auth = options.auth || config().auth;
+  const protectedApi = options.apiRouter || api;
   app.disable('x-powered-by');
   app.use(cors());
   app.use(express.json({ limit: '1mb' }));
@@ -15,7 +20,12 @@ function createApp() {
         mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
     }),
   );
-  app.use('/api/v1', api);
+  app.use('/api/v1', (_req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    next();
+  });
+  app.use('/api/v1/auth', createAuthRouter(auth));
+  app.use('/api/v1', requireAuth(auth), protectedApi);
   app.use(notFound);
   app.use(errors);
   return app;

@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   api,
   allPages,
+  ApiError,
   downloadCsv,
   loadBoot,
   type PatientRecord,
@@ -128,6 +130,7 @@ export default function PrototypeExperience({
   markup: string;
   pathname: string;
 }) {
+  const router = useRouter();
   const host = useRef<HTMLDivElement>(null);
   const started = useRef(false);
 
@@ -155,6 +158,10 @@ export default function PrototypeExperience({
       work.innerHTML = `<section class="card" style="margin:20px;padding:24px"><h2>Loading ${routeTitles[route.page] || 'workspace'}</h2><p style="color:var(--muted);margin-top:8px">Fetching this screen’s data…</p></section>`;
     let activePage = route.page;
     const notifyError = (error: unknown) => {
+      if (error instanceof ApiError && error.status === 401) {
+        router.replace('/login?reason=unauthenticated');
+        return;
+      }
       const message =
         error instanceof Error
           ? error.message
@@ -277,7 +284,7 @@ export default function PrototypeExperience({
         }
       })
       .catch(notifyError);
-  }, [markup, pathname]);
+  }, [markup, pathname, router]);
 
   return <div ref={host} dangerouslySetInnerHTML={{ __html: markup }} />;
 }

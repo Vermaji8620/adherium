@@ -1,8 +1,8 @@
 # Adherium backend foundation
 
-Standalone Express + Mongoose API for a local, synthetic-data review of the respiratory-monitoring prototype. It does not connect to Hailie devices or an EHR, and it is not a clinical system. Authentication and authorization are not implemented. Keep the server bound to localhost and never expose these unauthenticated APIs publicly.
+Standalone Express + Mongoose API for a synthetic-data review of the respiratory-monitoring prototype. It does not connect to Hailie devices or an EHR, and it is not a clinical system. Every page-data endpoint under `/api/v1` requires a signed session. The server remains bound to localhost by default.
 
-Structure: `src/config.js` environment configuration; `src/db.js` MongoDB connection; `src/models/` Mongoose models and indexes; `src/routes/<resource>/index.js` resource routes, with `src/routes/index.js` mounting them and `src/routes/shared.js` holding common helpers; `src/services/analytics.js` server-side dashboard aggregation; `src/validation.js` request/query validation; `src/seed/` deterministic generator and opt-in upsert runner; `test/` focused checks.
+Structure: `src/config.js` environment configuration; `src/auth/` password hashing and signed sessions; `src/db.js` MongoDB connection; `src/models/` Mongoose models and indexes; `src/routes/<resource>/index.js` resource routes, with `src/routes/index.js` mounting them and `src/routes/shared.js` holding common helpers; `src/services/analytics.js` server-side dashboard aggregation; `src/validation.js` request/query validation; `src/seed/` deterministic generator and opt-in upsert runner; `test/` focused checks.
 
 ## Formatting
 
@@ -96,12 +96,29 @@ Copy-Item .env.example .env.local
 notepad .env.local
 ```
 
-If `.env.local` already exists, do not replace it; add `MONGODB_URI` and `PORT=4000` using a local editor. Never paste credentials into chat. The API will fail safely if the URI is missing or MongoDB cannot be reached. Seed is opt-in and requires the explicit `--apply` flag:
+If `.env.local` already exists, do not replace it; add `MONGODB_URI`, `PORT=4000`, and the authentication settings below using a local editor. Never paste credentials into chat. The API will fail safely if the URI is missing or MongoDB cannot be reached. Seed is opt-in and requires the explicit `--apply` flag:
 
 ```powershell
 npm run seed
 npm run seed -- --dry-run
 npm run seed -- --apply
+```
+
+### Authentication setup
+
+Configure one operator account in `backend/.env.local`:
+
+- `AUTH_EMAIL`: the sign-in email address.
+- `AUTH_PASSWORD_HASH`: create it by running `npm run auth:hash` in `backend/`. The interactive command hides the password and requires at least 12 characters. Copy its `AUTH_PASSWORD_HASH=...` output into `.env.local`.
+- `AUTH_SECRET`: generate a random 32-byte secret with `node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"` and store the output in `.env.local`.
+
+The login API is `POST /api/v1/auth/login`; session status is `GET /api/v1/auth/session`; sign-out is `POST /api/v1/auth/logout`. The `/health` check stays public. All page-data APIs under `/api/v1` are protected and return `401 UNAUTHENTICATED` when a valid session cookie is missing. Missing or invalid auth configuration fails closed with `503 AUTH_NOT_CONFIGURED`.
+
+Successful sign-in sets an eight-hour `HttpOnly`, `SameSite=Lax` cookie; production mode also sets `Secure`. Sessions are signed and stateless, so logging out clears the browser cookie, while a copied token remains valid until it expires. This setup provisions one configured account; it does not provide user registration, password recovery, roles, or centralized revocation. If the service is deployed across multiple instances, use shared login-rate limiting and session revocation before treating it as a multi-user identity system.
+
+Start the backend after these values are configured:
+
+```powershell
 npm start
 ```
 
@@ -119,4 +136,4 @@ Tests use pure validation, the generated fixture, and HTTP tests against an unco
 
 ## Limits and simulated behavior
 
-The source shows generated browser demo data and simulated device sync, firmware schedule, app relay/cloud ingestion, EHR export, and import validation. It does not provide real identities, age/diagnosis/medication history, device serials, firmware status events, actual device readings, audit history state, report snapshot details, backend contracts, authentication, or live integrations. The seed preserves 248 synthetic IDs, cohort distribution algorithm, 90-day daily dose/rescue ranges, connectivity, battery, sync-age pattern, and firmware assignment pattern. Seed-generated events use representative timestamps/hours because browser data stores daily arrays rather than actual event timestamps. Never present this backend as live monitoring or clinically validated.
+The source shows generated browser demo data and simulated device sync, firmware schedule, app relay/cloud ingestion, EHR export, and import validation. It does not define an identity system, provide real identities, age/diagnosis/medication history, device serials, firmware status events, actual device readings, audit history state, report snapshot details, backend contracts, or live integrations. The backend's environment-configured login protects this synthetic workspace; it does not establish a reusable multi-user identity service. The seed preserves 248 synthetic IDs, cohort distribution algorithm, 90-day daily dose/rescue ranges, connectivity, battery, sync-age pattern, and firmware assignment pattern. Seed-generated events use representative timestamps/hours because browser data stores daily arrays rather than actual event timestamps. Never present this backend as live monitoring or clinically validated.

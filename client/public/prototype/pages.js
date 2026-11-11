@@ -1676,7 +1676,9 @@ PAGES.reports = () => {
   w.innerHTML =
     head('Reports & Insights', 'Reports', '') +
     `
-    <div class="grid report-templates" role="region" aria-label="Report templates" style="margin-bottom:16px">${Object.entries(TPL)
+    <div class="grid report-templates" role="region" aria-label="Report templates" style="margin-bottom:16px">${Object.entries(
+      TPL,
+    )
       .map(
         ([k, [t, d, c]]) =>
           `<button class="tpl ${c} c3" data-t="${k}" style="grid-column:span 3"><span style="display:flex;justify-content:space-between;width:100%"><span class="wcirc ${c ? '' : 'g'}" style="${c ? '' : 'background:var(--bg);color:var(--text)'}">${ic('doc')}</span><span class="wcirc" style="${c ? '' : 'background:var(--ink);color:#fff'}">${ic('arrow')}</span></span><h3>${t}</h3><small>${d}</small></button>`,

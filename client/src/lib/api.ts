@@ -7,6 +7,18 @@ export type ApiEnvelope<T> = {
 };
 
 const RESOURCE_CACHE_TTL = 60_000;
+
+export class ApiError extends Error {
+  status: number;
+  code?: string;
+
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.code = code;
+  }
+}
 const resourceCache = new Map<
   string,
   { expiresAt: number; promise: Promise<unknown> }
@@ -34,7 +46,7 @@ function clearResourceCache() {
 
 export async function api<T>(
   path: string,
-  init?: RequestInit & { body?: unknown },
+  init?: Omit<RequestInit, 'body'> & { body?: unknown },
 ): Promise<T> {
   const { body, headers, ...rest } = init || {};
   const response = await fetch(`/api/v1${path}`, {
@@ -64,7 +76,11 @@ export async function api<T>(
         : error
           ? String(error)
           : `Request failed (${response.status})`;
-    throw new Error(message);
+    const code =
+      error && typeof error === 'object' && 'code' in error
+        ? String((error as { code: unknown }).code)
+        : undefined;
+    throw new ApiError(message, response.status, code);
   }
   if ((rest.method || 'GET').toUpperCase() !== 'GET') clearResourceCache();
   return payload as T;
@@ -561,7 +577,15 @@ export async function loadBoot(
 
 export async function downloadCsv(path: string, filename: string) {
   const response = await fetch('/api/v1' + path, { cache: 'no-store' });
-  if (!response.ok) throw new Error(`CSV export failed (${response.status}).`);
+  if (!response.ok) {
+    const error = new ApiError(
+      `CSV export failed (${response.status}).`,
+      response.status,
+      response.status === 401 ? 'UNAUTHENTICATED' : undefined,
+    );
+    if (response.status === 401) window.__ADHERIUM_SHOW_ERROR__?.(error);
+    throw error;
+  }
   const blob = await response.blob();
   const href = URL.createObjectURL(blob);
   const link = document.createElement('a');
