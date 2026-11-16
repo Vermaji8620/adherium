@@ -59,6 +59,7 @@ const eventSchema = new Schema(
 );
 eventSchema.index({ patient: 1, occurredAt: -1 });
 eventSchema.index({ type: 1, occurredAt: -1 });
+eventSchema.index({ type: 1, occurredAt: -1, _id: -1 });
 const scheduleSchema = new Schema(
   {
     patient: {
@@ -86,6 +87,7 @@ const adherenceSchema = new Schema(
   base,
 );
 adherenceSchema.index({ patient: 1, date: -1 }, { unique: true });
+adherenceSchema.index({ date: -1, _id: -1 });
 const alertSchema = new Schema(
   {
     externalId: { type: String, required: true, unique: true },

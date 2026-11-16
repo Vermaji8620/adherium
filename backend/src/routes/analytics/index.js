@@ -36,11 +36,11 @@ router.get(
     }
     if (req.query.type) filter.type = req.query.type;
     if (Object.keys(d).length) filter.occurredAt = d;
-    const { page, limit, skip } = pageQuery(req.query);
+    const { page, limit, skip } = pageQuery(req.query, 5000);
     const [items, total] = await Promise.all([
       InhalerEvent.find(filter)
         .populate('patient', 'externalId cohort')
-        .sort({ occurredAt: -1 })
+        .sort({ occurredAt: -1, _id: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
@@ -64,11 +64,11 @@ router.get(
       const ps = await Patient.find({ cohort: req.query.cohort }).select('_id');
       filter.patient = { $in: ps.map((x) => x._id) };
     }
-    const { page, limit, skip } = pageQuery(req.query);
+    const { page, limit, skip } = pageQuery(req.query, 5000);
     const [items, total] = await Promise.all([
       AdherenceRecord.find(filter)
         .populate('patient', 'externalId cohort')
-        .sort({ date: -1 })
+        .sort({ date: -1, _id: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),

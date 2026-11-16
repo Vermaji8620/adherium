@@ -13,10 +13,10 @@ function boundedString(v, name, min = 1, max = 4000) {
     fail(`${name} must be ${min}-${max} characters.`);
   return v.trim();
 }
-function pageQuery(q) {
+function pageQuery(q, maxLimit = 100) {
   const page = Math.max(1, Number.parseInt(q.page || '1', 10));
   const limit = Math.min(
-    100,
+    maxLimit,
     Math.max(1, Number.parseInt(q.limit || '25', 10)),
   );
   return { page, limit, skip: (page - 1) * limit };

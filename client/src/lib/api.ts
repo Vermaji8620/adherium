@@ -86,13 +86,17 @@ export async function api<T>(
   return payload as T;
 }
 
-export async function allPages<T>(path: string): Promise<T[]> {
+export async function allPages<T>(
+  path: string,
+  requestedLimit = 100,
+): Promise<T[]> {
   const first = await api<ApiEnvelope<T>>(
-    `${path}${path.includes('?') ? '&' : '?'}page=1&limit=100`,
+    `${path}${path.includes('?') ? '&' : '?'}page=1&limit=${requestedLimit}`,
   );
   const items = first.items || [];
   const total = first.total || items.length;
-  const pageCount = Math.ceil(total / 100);
+  const limit = first.limit || requestedLimit;
+  const pageCount = Math.ceil(total / limit);
   const rest: ApiEnvelope<T>[] = [];
   for (let start = 2; start <= pageCount; start += 10) {
     const pageNumbers = Array.from(
@@ -103,7 +107,7 @@ export async function allPages<T>(path: string): Promise<T[]> {
       ...(await Promise.all(
         pageNumbers.map((page) =>
           api<ApiEnvelope<T>>(
-            `${path}${path.includes('?') ? '&' : '?'}page=${page}&limit=100`,
+            `${path}${path.includes('?') ? '&' : '?'}page=${page}&limit=${limit}`,
           ),
         ),
       )),
@@ -385,6 +389,19 @@ export async function loadBoot(
       const [name, daysText] = resource.split(':');
       const days = Number(daysText);
       const key = days ? `${name}:${days}` : name;
+      // A cached longer window already contains every record this page needs.
+      if (name === 'adherence' || name === 'events') {
+        const covering = [...resourceCache.entries()].find(
+          ([cachedKey, value]) =>
+            cachedKey.startsWith(`${name}:`) &&
+            Number(cachedKey.split(':')[1]) >= days &&
+            value.expiresAt > Date.now(),
+        );
+        if (covering) {
+          await covering[1].promise;
+          return;
+        }
+      }
       await cachedResource(key, async () => {
         switch (name as ResourceName) {
           case 'patients':
@@ -398,6 +415,7 @@ export async function loadBoot(
             from.setUTCDate(from.getUTCDate() - days + 1);
             const rows = await allPages<AdherenceRecord>(
               `/adherence?from=${encodeURIComponent(from.toISOString())}`,
+              5000,
             );
             for (const row of rows) {
               const id = patientId(row.patient);
@@ -433,6 +451,7 @@ export async function loadBoot(
             from.setUTCDate(from.getUTCDate() - days + 1);
             const rows = await allPages<EventRecord>(
               `/events?type=rescue-use&from=${encodeURIComponent(from.toISOString())}`,
+              5000,
             );
             for (const row of rows) {
               const id = patientId(row.patient);
