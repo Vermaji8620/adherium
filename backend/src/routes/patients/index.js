@@ -72,7 +72,7 @@ router.get(
       MedicationSchedule.findOne({ patient: patient._id }).lean(),
       AdherenceRecord.find({ patient: patient._id })
         .sort({ date: -1 })
-        .limit(30)
+        .limit(90)
         .lean(),
       Alert.find({ patient: patient._id })
         .sort({ createdAt: -1 })
