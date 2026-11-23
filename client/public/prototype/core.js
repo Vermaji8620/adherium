@@ -778,14 +778,13 @@ function drawDevices(P, animate) {
       delay: 0.2,
     });
 }
-const fmtAgo = (m) =>
-  !Number.isFinite(m) || m < 0
-    ? 'Unavailable'
-    : m < 60
-      ? m + ' min ago'
-      : m < 1440
-        ? Math.round(m / 60) + ' h ago'
-        : Math.round(m / 1440) + ' days ago';
+const fmtAgo = (m) => {
+  if (!Number.isFinite(m) || m < 0) return 'Unavailable';
+  if (m < 60) return m + ' min ago';
+  if (m < 1440) return Math.round(m / 60) + ' h ago';
+  const days = Math.round(m / 1440);
+  return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+};
 
 /* rounded vertical usage bars */
 function drawTrend(animate) {
@@ -832,7 +831,7 @@ function drawTrend(animate) {
     const w = weeks[+b.dataset.i];
     bindTip(
       b,
-      `<b>${w.k === 0 ? 'This week' : w.k + ' weeks ago'}</b>${ctrl ? pct(w.v) + ' of controller doses taken' : w.v.toFixed(2) + ' rescue inhaler uses per patient'}`,
+      `<b>${w.k === 0 ? 'This week' : w.k + (w.k === 1 ? ' week ago' : ' weeks ago')}</b>${ctrl ? pct(w.v) + ' of controller doses taken' : w.v.toFixed(2) + ' rescue inhaler uses per patient'}`,
     );
   });
   const first = weeks[0].v,
@@ -1225,6 +1224,9 @@ $('#settings').onclick = (e) =>
     document.documentElement.dataset.theme,
     (v) => {
       document.documentElement.dataset.theme = v;
+      try {
+        localStorage.setItem('adherium-theme', v);
+      } catch {}
       toast(v === 'dark' ? 'Dark theme on' : 'Light theme on');
     },
   );

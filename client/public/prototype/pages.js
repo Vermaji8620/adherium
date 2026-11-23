@@ -244,7 +244,7 @@ PAGES.patients = () => {
     $('#pm-more').innerHTML =
       r.length > PM.limit
         ? `<button class="btn more" id="pm-m">Show more (${r.length - PM.limit} remaining)</button>`
-        : `<div class="k" style="text-align:center;margin-top:10px">${r.length} patients shown</div>`;
+        : `<div class="k" style="text-align:center;margin-top:10px">${r.length} ${r.length === 1 ? 'patient' : 'patients'} shown</div>`;
     const m = $('#pm-m');
     if (m)
       m.onclick = () => {
@@ -269,7 +269,7 @@ PAGES.patients = () => {
       });
     const fu = base.filter((p) => statusOf(p) === 'fu');
     $('#pm-side').innerHTML =
-      `<div class="pm-fu-a"><div><h2>Follow-up <b>today</b></h2><p style="color:#BDBDBD;font-size:13px;margin:6px 0 16px">${fu.length} patients are below the 80% adherence target or using rescue inhalers more than usual.</p></div>
+      `<div class="pm-fu-a"><div><h2>Follow-up <b>today</b></h2><p style="color:#BDBDBD;font-size:13px;margin:6px 0 16px">${fu.length} ${fu.length === 1 ? 'patient is' : 'patients are'} below the 80% adherence target or using rescue inhalers more than usual.</p></div>
       <div class="pm-fu-stat" style="display:flex;align-items:center;gap:16px;margin-bottom:16px">${ringSVG(counts.on / counts.all, 96, 10, '#087BFF', 'Share on track')}<div><div class="big" style="color:#fff">${Math.round((counts.on / counts.all) * 100)}<small style="color:#BDBDBD">%</small></div><small style="color:#BDBDBD">on track</small></div></div>
       <button class="btn-blue" id="pm-al" style="margin-top:12px"><span>Open alerts</span><i>${ic('arrow')}</i></button></div>
       <div class="timeline-list pm-fu-b">${fu
@@ -597,7 +597,7 @@ PAGES.devices = () => {
     ) +
     `
     <div class="grid" style="margin-bottom:16px">
-      <section class="card dark c5" id="dv-hero"><div class="card-h"><h2>Fleet <b>sync</b></h2><span class="k" style="color:#9A9A9A">${PATIENTS.length} sensors</span></div>${inhalerSVG('Fleet')}
+      <section class="card dark c5" id="dv-hero"><div class="card-h"><h2>Fleet <b>sync</b></h2><span class="k" style="color:#9A9A9A">${PATIENTS.length} ${PATIENTS.length === 1 ? 'sensor' : 'sensors'}</span></div>${inhalerSVG('Fleet')}
         <div class="progress" style="margin:12px 0 6px;opacity:0"><i></i></div><div class="k" id="dv-msg" style="color:#9A9A9A;min-height:18px">Request a sync for every inhaler that is pending or offline.</div>
         <button class="btn-blue" id="dv-all" style="margin-top:6px"><span>Sync pending devices</span><i>${ic('arrow')}</i></button></section>
       <section class="card c7"><div class="card-h"><h2>Connection status</h2></div>
@@ -908,7 +908,7 @@ PAGES['medication-adherence'] = () => {
     });
     const missed = P.filter((p) => p.doses[DAYS - 1 - off] === 0);
     $('#ma-day').innerHTML =
-      `<div class="card-h"><div><div class="k">${off === 0 ? 'Today' : off + ' days ago'}</div><h2>${dayLong(off)}</h2></div></div><div class="big">${(v * 100).toFixed(1)}<small>%</small></div><div class="k" style="margin:4px 0 16px">of ${P.filter((p) => Number.isFinite(p.doses[DAYS - 1 - off])).length * 2} recorded scheduled doses taken</div>
+      `<div class="card-h"><div><div class="k">${off === 0 ? 'Today' : off + (off === 1 ? ' day ago' : ' days ago')}</div><h2>${dayLong(off)}</h2></div></div><div class="big">${(v * 100).toFixed(1)}<small>%</small></div><div class="k" style="margin:4px 0 16px">of ${P.filter((p) => Number.isFinite(p.doses[DAYS - 1 - off])).length * 2} recorded scheduled doses taken</div>
       ${byC
         .filter((x) => x[1] !== null)
         .map(
@@ -916,7 +916,7 @@ PAGES['medication-adherence'] = () => {
             `<div style="display:grid;grid-template-columns:120px 1fr 48px;gap:10px;align-items:center;margin-bottom:10px;font-size:13px"><span>${c.short}</span><div class="hbar"><i data-w="${r * 100}" style="background:${c.id === 'copd' ? 'var(--data-ink)' : c.id === 'asthma-p' ? '#7FB7F7' : '#087BFF'}"></i></div><b style="font-weight:600;text-align:right">${(r * 100).toFixed(0)}%</b></div>`,
         )
         .join('')}
-      <div class="k" style="margin:16px 0 8px">${missed.length} patients missed both doses</div><div style="display:flex;flex-wrap:wrap;gap:6px">${missed
+      <div class="k" style="margin:16px 0 8px">${missed.length} ${missed.length === 1 ? 'patient missed' : 'patients missed'} both doses</div><div style="display:flex;flex-wrap:wrap;gap:6px">${missed
         .slice(0, 12)
         .map(
           (p) =>
@@ -1021,7 +1021,7 @@ PAGES['respiratory-analytics'] = () => {
     `
     <div class="kpis"><div class="kpi"><span class="k">Rescue uses, ${days} days</span><b data-count="${totR}">0</b></div><div class="kpi dk"><span class="k">Overnight share, 00:00–06:00</span><b><span data-count="${totR ? ((night / totR) * 100).toFixed(1) : 0}" data-dec="1">0</span><small style="color:#9A9A9A">%</small></b></div><div class="kpi"><span class="k">Rescue uses per patient per week</span><b data-count="${(totR / P.length / (days / 7)).toFixed(2)}" data-dec="2">0</b></div><div class="kpi bl"><span class="k">Median symptom-free days, 30 d</span><b data-count="${medianSfd}">0</b></div></div>
     <div class="grid">
-      <section class="card c5"><div class="card-h"><div><h2>Rescue use by hour</h2><div class="k">Each bar is one hour of the day. Black marks overnight use</div></div></div><svg class="clock" id="ra-clock" viewBox="0 0 320 320" style="width:100%;max-width:340px;display:block;margin:0 auto"></svg></section>
+      <section class="card c5"><div class="card-h"><div><h2>Rescue use by hour</h2><div class="k">Each bar is one hour of the day. Grey marks overnight use, 00:00 to 06:00</div></div></div><svg class="clock" id="ra-clock" viewBox="0 0 320 320" style="width:100%;max-width:340px;display:block;margin:0 auto"></svg></section>
       <section class="card c7"><div class="card-h"><div><h2>Adherence against rescue use</h2><div class="k">Each point is a patient over 30 days. Click one to open the profile</div></div><div class="legend">${COHORTS.map((c) => `<span><i style="background:${c.id === 'asthma-p' ? '#7FB7F7' : c.color}"></i>${c.short}</span>`).join('')}</div></div><svg id="ra-sc" viewBox="0 0 640 320" style="width:100%;height:auto;display:block"></svg></section>
       <section class="card c7"><div class="card-h"><div><h2>Weekly rescue use trend</h2><div class="k">Uses per patient, last 12 weeks</div></div></div><svg id="ra-tr" viewBox="0 0 640 220" preserveAspectRatio="none" style="width:100%;height:220px;display:block"></svg></section>
       <section class="card c5"><div class="card-h"><div><h2>Symptom-free days</h2><div class="k">Days without rescue use, last 30 days</div></div></div><div class="bars" id="ra-sfd" style="height:200px;gap:8px"></div></section>
@@ -1137,7 +1137,7 @@ PAGES['respiratory-analytics'] = () => {
     t += se.v
       .map(
         (v, i) =>
-          `<circle class="trd" cx="${tx(i)}" cy="${ty(v)}" r="3.5" fill="var(--card)" stroke="${se.c.id === 'asthma-p' ? '#7FB7F7' : se.c.color}" stroke-width="2" vector-effect="non-scaling-stroke"><title>${se.c.short}, ${11 - i} weeks ago: ${v.toFixed(2)}</title></circle>`,
+          `<circle class="trd" cx="${tx(i)}" cy="${ty(v)}" r="3.5" fill="var(--card)" stroke="${se.c.id === 'asthma-p' ? '#7FB7F7' : se.c.color}" stroke-width="2" vector-effect="non-scaling-stroke"><title>${se.c.short}, ${11 - i} ${11 - i === 1 ? 'week' : 'weeks'} ago: ${v.toFixed(2)}</title></circle>`,
       )
       .join('');
   });
@@ -1500,7 +1500,7 @@ PAGES['care-team'] = () => {
       .map((r, i) => {
         const mine = A.filter((a) => a.status === 'assigned' && a.by === r[0]);
         const notes = DB.notes.filter((n) => n.role === r[0]);
-        return `<section class="role-col c4 ${i === 0 ? '' : ''}" style="${i === 1 ? 'background:var(--ink);color:#fff' : ''}"><div style="display:flex;justify-content:space-between;align-items:center"><span class="av" style="width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:600;background:${i === 1 ? '#087BFF' : 'var(--sky)'};color:${i === 1 ? '#fff' : '#0458BA'}">${r[1]}</span><span class="k" style="${i === 1 ? 'color:#9A9A9A' : ''}">${notes.length} notes</span></div><h3 style="margin-top:14px">${r[0]}</h3><div class="k" style="${i === 1 ? 'color:#9A9A9A' : ''}">${mine.length} assigned follow-ups</div>
+        return `<section class="role-col c4 ${i === 0 ? '' : ''}" style="${i === 1 ? 'background:var(--ink);color:#fff' : ''}"><div style="display:flex;justify-content:space-between;align-items:center"><span class="av" style="width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:600;background:${i === 1 ? '#087BFF' : 'var(--sky)'};color:${i === 1 ? '#fff' : '#0458BA'}">${r[1]}</span><span class="k" style="${i === 1 ? 'color:#9A9A9A' : ''}">${notes.length} ${notes.length === 1 ? 'note' : 'notes'}</span></div><h3 style="margin-top:14px">${r[0]}</h3><div class="k" style="${i === 1 ? 'color:#9A9A9A' : ''}">${mine.length} assigned ${mine.length === 1 ? 'follow-up' : 'follow-ups'}</div>
       <div style="margin-top:10px">${
         mine
           .slice(0, 4)

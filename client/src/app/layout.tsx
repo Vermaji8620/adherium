@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import fs from 'node:fs';
 import path from 'node:path';
 import PrototypeFrame from '@/components/PrototypeFrame';
@@ -17,7 +18,23 @@ export default function RootLayout({
     'utf8',
   );
   return (
-    <html lang="en" data-theme="light">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script id="theme-initializer" strategy="beforeInteractive">
+          {`(() => {
+            let theme = null;
+            try {
+              theme = localStorage.getItem('adherium-theme');
+            } catch {}
+            if (theme !== 'light' && theme !== 'dark') {
+              theme = matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+            }
+            document.documentElement.dataset.theme = theme;
+          })();`}
+        </Script>
+      </head>
       <body>
         <PrototypeFrame markup={markup} />
         {children}
