@@ -5,6 +5,7 @@ const { api } = require('./routes');
 const { config } = require('./config');
 const { requireAuth } = require('./middleware/authentication');
 const { createAuthRouter } = require('./routes/auth');
+const { TODAY: DEMO_DATA_END } = require('./seed/generate');
 function createApp(options = {}) {
   const express = options.express || require('express');
   const app = express();
@@ -21,6 +22,7 @@ function createApp(options = {}) {
         status: 'ok',
         database:
           mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+        demoDataEnd: DEMO_DATA_END.toISOString().slice(0, 10),
       }),
     ),
   );

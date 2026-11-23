@@ -1,8 +1,12 @@
 const { Patient, AdherenceRecord, Device, Alert } = require('../models');
 
-async function overview({ days = 7, cohort } = {}) {
-  const from = new Date(Date.now() - days * 864e5);
-  const match = { date: { $gte: from } };
+async function overview({ days = 7, cohort, referenceDate = new Date() } = {}) {
+  const to = new Date(referenceDate);
+  to.setUTCHours(23, 59, 59, 999);
+  const from = new Date(to);
+  from.setUTCHours(0, 0, 0, 0);
+  from.setUTCDate(from.getUTCDate() - days + 1);
+  const match = { date: { $gte: from, $lte: to } };
   if (cohort) {
     const patients = await Patient.find({
       cohort: cohort === 'asthma' ? /^asthma/ : cohort,

@@ -7,6 +7,7 @@ export type ApiEnvelope<T> = {
 };
 
 const RESOURCE_CACHE_TTL = 60_000;
+const DAY_MS = 86_400_000;
 
 export class ApiError extends Error {
   status: number;
@@ -123,6 +124,7 @@ export type PatientRecord = {
   battery: number;
   lastSyncAt?: string;
   enrolledDaysAgo?: number;
+  synthetic?: boolean;
 };
 type DeviceRecord = {
   externalId: string;
@@ -136,6 +138,7 @@ type AdherenceRecord = {
   date: string;
   taken: number;
   rescueUses: number;
+  synthetic?: boolean;
 };
 type AlertRecord = {
   externalId: string;
@@ -179,6 +182,12 @@ type EventRecord = {
   type: string;
   occurredAt: string;
   hour?: number;
+  synthetic?: boolean;
+};
+type HealthResponse = {
+  status: string;
+  database: string;
+  demoDataEnd: string;
 };
 type ResourceName =
   | 'patients'
@@ -246,6 +255,9 @@ type LegacyAlert = {
 type Boot = {
   page: string;
   patientId?: string;
+  demoDataEnd: string;
+  demoOffsetDays: number;
+  demoNow: string;
   loadedResources: ResourceName[];
   historyDays: number;
   patients: LegacyPatient[];
@@ -289,6 +301,27 @@ type Boot = {
     hour?: number;
   }[];
 };
+
+export function demoDateWindow(demoDataEnd: string, days: number) {
+  const end = new Date(`${demoDataEnd}T00:00:00.000Z`);
+  const from = new Date(end.getTime() - (days - 1) * DAY_MS);
+  const to = new Date(end.getTime() + DAY_MS - 1);
+  return { from, to };
+}
+
+export function projectDemoTimestamp(
+  value: string | undefined,
+  shouldProject: boolean,
+  demoOffsetDays: number,
+  demoDataEnd: string,
+) {
+  if (!value || !shouldProject) return value;
+  const time = new Date(value).getTime();
+  const sourceEndExclusive =
+    new Date(`${demoDataEnd}T00:00:00.000Z`).getTime() + DAY_MS;
+  if (!Number.isFinite(time) || time >= sourceEndExclusive) return value;
+  return new Date(time + demoOffsetDays * DAY_MS).toISOString();
+}
 
 const cohortData: Record<PatientRecord['cohort'], CohortShape> = {
   'asthma-adult': {
@@ -356,7 +389,7 @@ export async function loadBoot(
     'medication-adherence': [
       'patients',
       'devices',
-      'adherence:35',
+      'adherence:60',
       'events:30',
     ],
     'respiratory-analytics': [
@@ -378,12 +411,21 @@ export async function loadBoot(
     'data-management': ['imports', 'audit', 'integrations', 'firmware'],
   };
   const requested = pageResources[page] || pageResources.dashboard;
-  await cachedResource('health', async () => {
+  const health = await cachedResource<HealthResponse>('health', async () => {
     const response = await fetch('/health', { cache: 'no-store' });
     if (!response.ok)
       throw new Error(`Backend health check failed (${response.status}).`);
-    return true;
+    return (await response.json()) as HealthResponse;
   });
+  if (!health.demoDataEnd)
+    throw new Error('The backend did not provide the demo data period.');
+  const demoNow = new Date();
+  // Seeded timestamps are projected by whole UTC days, so compare them at midnight too.
+  demoNow.setUTCHours(0, 0, 0, 0);
+  const demoDataEndDate = new Date(`${health.demoDataEnd}T00:00:00.000Z`);
+  const demoOffsetDays = Math.round(
+    (demoNow.getTime() - demoDataEndDate.getTime()) / DAY_MS,
+  );
   await Promise.all(
     requested.map(async (resource) => {
       const [name, daysText] = resource.split(':');
@@ -410,11 +452,9 @@ export async function loadBoot(
           case 'devices':
             return (rawData.devices = await allPages<DeviceRecord>('/devices'));
           case 'adherence': {
-            const from = new Date();
-            from.setUTCHours(0, 0, 0, 0);
-            from.setUTCDate(from.getUTCDate() - days + 1);
+            const { from, to } = demoDateWindow(health.demoDataEnd, days);
             const rows = await allPages<AdherenceRecord>(
-              `/adherence?from=${encodeURIComponent(from.toISOString())}`,
+              `/adherence?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`,
               5000,
             );
             for (const row of rows) {
@@ -446,11 +486,9 @@ export async function loadBoot(
             return (rawData.firmware =
               (await api<{ items: unknown[] }>('/data/firmware')).items || []);
           case 'events': {
-            const from = new Date();
-            from.setUTCHours(0, 0, 0, 0);
-            from.setUTCDate(from.getUTCDate() - days + 1);
+            const { from, to } = demoDateWindow(health.demoDataEnd, days);
             const rows = await allPages<EventRecord>(
-              `/events?type=rescue-use&from=${encodeURIComponent(from.toISOString())}`,
+              `/events?type=rescue-use&from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`,
               5000,
             );
             for (const row of rows) {
@@ -485,8 +523,7 @@ export async function loadBoot(
   if (resourceNames.has('adherence') || resourceNames.has('devices'))
     resourceNames.add('patients');
   const loadedResources = [...resourceNames];
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
+  const today = demoNow;
   const deviceByPatient = new Map(
     deviceRows.map((device) => [patientId(device.patient), device]),
   );
@@ -503,15 +540,33 @@ export async function loadBoot(
     const doses = Array(90).fill(Number.NaN) as number[];
     const rescue = Array(90).fill(Number.NaN) as number[];
     for (const record of daily) {
-      const key = String(record.date).slice(0, 10);
-      const date = new Date(`${key}T00:00:00Z`);
-      const offset = Math.round((today.getTime() - date.getTime()) / 86400000);
+      const projectedDate = projectDemoTimestamp(
+        record.date,
+        record.synthetic === true,
+        demoOffsetDays,
+        health.demoDataEnd,
+      );
+      const date = new Date(projectedDate || record.date);
+      const offset = Math.round(
+        (today.getTime() -
+          Date.UTC(
+            date.getUTCFullYear(),
+            date.getUTCMonth(),
+            date.getUTCDate(),
+          )) /
+          DAY_MS,
+      );
       if (offset >= 0 && offset < 90) {
         doses[89 - offset] = record.taken;
         rescue[89 - offset] = record.rescueUses;
       }
     }
-    const lastSyncAt = device?.lastSyncAt || patient.lastSyncAt;
+    const lastSyncAt = projectDemoTimestamp(
+      device?.lastSyncAt || patient.lastSyncAt,
+      patient.synthetic === true,
+      demoOffsetDays,
+      health.demoDataEnd,
+    );
     return {
       id: patient.externalId,
       deviceId: device?.externalId,
@@ -521,7 +576,10 @@ export async function loadBoot(
       status: device?.connectivity || patient.status,
       battery: device?.battery ?? patient.battery,
       lastSync: lastSyncAt
-        ? Math.max(0, Math.floor((Date.now() - timestamp(lastSyncAt)) / 60000))
+        ? Math.max(
+            0,
+            Math.floor((demoNow.getTime() - timestamp(lastSyncAt)) / 60000),
+          )
         : Number.NaN,
       enrolled: patient.enrolledDaysAgo || 0,
     };
@@ -531,6 +589,12 @@ export async function loadBoot(
     const p = byId.get(patientId(alert.patient));
     if (!p) return [];
     const kind = typeLabel(alert.type);
+    const createdAt = projectDemoTimestamp(
+      alert.createdAt,
+      alert.externalId.startsWith('AL-PT-'),
+      demoOffsetDays,
+      health.demoDataEnd,
+    );
     return [
       {
         id: alert.externalId,
@@ -541,17 +605,26 @@ export async function loadBoot(
         text: alert.detail || 'Alert details are not available.',
         mins: Math.max(
           0,
-          Math.round((Date.now() - timestamp(alert.createdAt)) / 60000),
+          Math.round((demoNow.getTime() - timestamp(createdAt)) / 60000),
         ),
         status: alert.status || 'open',
         by: alert.assignedTo || alert.acknowledgedBy || null,
       },
     ];
   });
-  const at = (value: string) => value;
+  const projectSeedDate = (value: string | undefined, isSeedRecord: boolean) =>
+    projectDemoTimestamp(
+      value,
+      isSeedRecord,
+      demoOffsetDays,
+      health.demoDataEnd,
+    );
   return {
     page,
     patientId: selectedPatient,
+    demoDataEnd: health.demoDataEnd,
+    demoOffsetDays,
+    demoNow: demoNow.toISOString(),
     loadedResources,
     historyDays: rawData.adherenceDays,
     patients,
@@ -559,7 +632,9 @@ export async function loadBoot(
     events: eventRows.map((event) => ({
       patientId: patientId(event.patient),
       type: event.type,
-      occurredAt: event.occurredAt,
+      occurredAt:
+        projectSeedDate(event.occurredAt, event.synthetic === true) ||
+        event.occurredAt,
       hour: event.hour,
     })),
     db: {
@@ -569,7 +644,13 @@ export async function loadBoot(
           {
             status: alert.status,
             by: alert.assignedTo || alert.acknowledgedBy,
-            at: alert.acknowledgedAt || alert.createdAt,
+            at:
+              alert.acknowledgedAt ||
+              projectSeedDate(
+                alert.createdAt,
+                alert.externalId.startsWith('AL-PT-'),
+              ) ||
+              alert.createdAt,
           },
         ]),
       ),
@@ -577,7 +658,7 @@ export async function loadBoot(
       audit: auditRows.map((row) => ({
         msg: row.action,
         role: row.role,
-        at: at(row.createdAt),
+        at: row.createdAt,
       })),
       notes: noteRows.map((row) => ({
         id: row.externalId,
@@ -585,14 +666,20 @@ export async function loadBoot(
         role: row.role,
         cat: row.category,
         text: row.text,
-        at: row.createdAt,
+        at:
+          projectSeedDate(
+            row.createdAt,
+            ['N-101', 'N-102'].includes(row.externalId),
+          ) || row.createdAt,
       })),
       reports: reportRows.map((row) => ({
         id: row.externalId,
         tpl: row.type,
         cohort: row.cohort,
         range: row.rangeDays,
-        at: row.createdAt,
+        at:
+          projectSeedDate(row.createdAt, row.snapshot?.synthetic === true) ||
+          row.createdAt,
         status: row.status,
         snapshot: row.snapshot,
       })),
@@ -601,7 +688,11 @@ export async function loadBoot(
         name: row.name,
         rows: row.rows,
         status: row.status,
-        at: row.createdAt,
+        at:
+          projectSeedDate(
+            row.createdAt,
+            row.externalId.startsWith('IM-seed-'),
+          ) || row.createdAt,
       })),
     },
     integrations: rawData.integrations || [],

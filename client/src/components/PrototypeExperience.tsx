@@ -6,8 +6,10 @@ import {
   api,
   allPages,
   ApiError,
+  demoDateWindow,
   downloadCsv,
   loadBoot,
+  projectDemoTimestamp,
   type PatientRecord,
 } from '@/lib/api';
 
@@ -34,7 +36,12 @@ declare global {
     __ADHERIUM_SHOW_ERROR__?: (error: unknown) => void;
     __ADHERIUM_PROFILE__?: {
       patientId: string;
-      events: { type: string; occurredAt: string; hour?: number }[];
+      events: {
+        type: string;
+        occurredAt: string;
+        hour?: number;
+        synthetic?: boolean;
+      }[];
     };
     __ADHERIUM_APP_STARTED__?: boolean;
     __ADHERIUM_ENSURE_PAGE_DATA__?: (page: string) => Promise<void>;
@@ -205,6 +212,7 @@ export default function PrototypeExperience({
         window.__ADHERIUM_LOAD_PROFILE__ = async (
           id = boot.patientId || 'PT-001',
         ) => {
+          const { from, to } = demoDateWindow(boot.demoDataEnd, 30);
           const [profile, timeline] = await Promise.all([
             api<{
               patient: PatientRecord;
@@ -213,25 +221,46 @@ export default function PrototypeExperience({
                 battery: number;
                 lastSyncAt?: string;
               };
-              adherence?: { date: string; taken: number; rescueUses: number }[];
+              adherence?: {
+                date: string;
+                taken: number;
+                rescueUses: number;
+                synthetic?: boolean;
+              }[];
             }>(`/patients/${encodeURIComponent(id)}`),
-            allPages<{ type: string; occurredAt: string; hour?: number }>(
-              `/patients/${encodeURIComponent(id)}/timeline?from=${encodeURIComponent(new Date(Date.now() - 30 * 86400000).toISOString())}`,
+            allPages<{
+              type: string;
+              occurredAt: string;
+              hour?: number;
+              synthetic?: boolean;
+            }>(
+              `/patients/${encodeURIComponent(id)}/timeline?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`,
             ),
           ]);
+          const demoNow = new Date(boot.demoNow);
+          const demoToday = new Date(demoNow);
+          demoToday.setUTCHours(0, 0, 0, 0);
           const patient = window.__ADHERIUM_PATIENTS__?.find(
             (item) => item.id === id,
           );
           if (patient) {
-            const now = new Date();
-            now.setUTCHours(0, 0, 0, 0);
             const dates = profile.adherence || [];
             for (const record of dates) {
-              const day = new Date(
-                `${String(record.date).slice(0, 10)}T00:00:00Z`,
+              const projectedDate = projectDemoTimestamp(
+                record.date,
+                record.synthetic === true,
+                boot.demoOffsetDays,
+                boot.demoDataEnd,
               );
+              const day = new Date(projectedDate || record.date);
               const offset = Math.round(
-                (now.getTime() - day.getTime()) / 86400000,
+                (demoToday.getTime() -
+                  Date.UTC(
+                    day.getUTCFullYear(),
+                    day.getUTCMonth(),
+                    day.getUTCDate(),
+                  )) /
+                  86400000,
               );
               if (offset >= 0 && offset < patient.doses.length) {
                 patient.doses[patient.doses.length - 1 - offset] = record.taken;
@@ -242,19 +271,36 @@ export default function PrototypeExperience({
             if (profile.device) {
               patient.status = profile.device.connectivity;
               patient.battery = profile.device.battery;
-              patient.lastSync = profile.device.lastSyncAt
+              const lastSyncAt = projectDemoTimestamp(
+                profile.device.lastSyncAt,
+                profile.patient.synthetic === true,
+                boot.demoOffsetDays,
+                boot.demoDataEnd,
+              );
+              patient.lastSync = lastSyncAt
                 ? Math.max(
                     0,
                     Math.floor(
-                      (Date.now() -
-                        new Date(profile.device.lastSyncAt).getTime()) /
+                      (demoNow.getTime() - new Date(lastSyncAt).getTime()) /
                         60000,
                     ),
                   )
                 : patient.lastSync;
             }
           }
-          window.__ADHERIUM_PROFILE__ = { patientId: id, events: timeline };
+          window.__ADHERIUM_PROFILE__ = {
+            patientId: id,
+            events: timeline.map((event) => ({
+              ...event,
+              occurredAt:
+                projectDemoTimestamp(
+                  event.occurredAt,
+                  event.synthetic === true,
+                  boot.demoOffsetDays,
+                  boot.demoDataEnd,
+                ) || event.occurredAt,
+            })),
+          };
           window.__ADHERIUM_BOOT__.patientId = id;
         };
         window.__ADHERIUM_REFRESH_AUDIT__ = () => {

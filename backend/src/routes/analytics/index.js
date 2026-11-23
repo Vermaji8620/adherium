@@ -24,6 +24,7 @@ const {
   audit,
 } = require('../shared');
 const router = express.Router();
+const { TODAY: DEMO_DATA_END } = require('../../seed/generate');
 
 router.get(
   '/events',
@@ -82,7 +83,13 @@ router.get(
   '/analytics/overview',
   handler(async (req, res) => {
     const days = Math.min(90, Math.max(1, Number(req.query.days) || 7));
-    res.json(await analytics.overview({ days, cohort: req.query.cohort }));
+    res.json(
+      await analytics.overview({
+        days,
+        cohort: req.query.cohort,
+        referenceDate: DEMO_DATA_END,
+      }),
+    );
   }),
 );
 

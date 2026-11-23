@@ -31,7 +31,11 @@ test('validation rejects bad strings and dates', () => {
 test('health check safely reports disconnected database state', async () => {
   const res = await request(createApp()).get('/health');
   assert.equal(res.status, 200);
-  assert.deepEqual(res.body, { status: 'ok', database: 'disconnected' });
+  assert.deepEqual(res.body, {
+    status: 'ok',
+    database: 'disconnected',
+    demoDataEnd: '2026-11-09',
+  });
   assert.equal(JSON.stringify(res.body).includes('mongodb'), false);
 });
 test('unknown API path returns a consistent JSON error', async () => {

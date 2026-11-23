@@ -67,8 +67,16 @@ const COHORTS = [
 const DAYS = 90; // history kept per patient
 const PATIENTS = window.__ADHERIUM_BOOT__.patients;
 window.__ADHERIUM_PATIENTS__ = PATIENTS;
-const TODAY = new Date();
+const DEMO_NOW = new Date(window.__ADHERIUM_BOOT__.demoNow);
+const TODAY = new Date(DEMO_NOW);
 TODAY.setUTCHours(0, 0, 0, 0);
+const demoDateLabel = () =>
+  TODAY.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
 const dayName = (off) =>
   new Date(TODAY.getTime() - off * 864e5)
     .toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' })
@@ -447,7 +455,7 @@ function renderDashboard(animate) {
   const w = $('#work');
   w.innerHTML = `
   <div class="whead"><div><h1>Respiratory Overview</h1><div class="crumb">Overview ${ic('right')} ${coLbl}</div></div>
-    <div class="ctrls"><span class="demo">● Synthetic demo data</span>
+    <div class="ctrls"><span class="demo">● Synthetic demo · 90-day sample through ${demoDateLabel()}</span>
       <button class="cbtn" id="c-range" aria-haspopup="listbox">${RANGE_LBL}<span class="cic">${ic('down')}</span></button>
       <button class="cbtn" id="c-export">Export<span class="cic">${ic('export')}</span></button>
       <button class="cbtn" id="c-filter" aria-haspopup="listbox">${ST.cohort === 'all' ? 'Filter' : coLbl}<span class="cic">${ic('filter')}</span></button></div></div>

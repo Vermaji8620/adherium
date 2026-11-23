@@ -80,7 +80,7 @@ function animateUI(root = $('#work')) {
     );
 }
 const head = (title, crumb, ctrls = '') =>
-  `<div class="whead"><div><h1>${title}</h1><div class="crumb">Overview ${ic('right')} ${crumb}</div></div><div class="ctrls"><span class="demo">● Synthetic demo data</span>${ctrls}</div></div>`;
+  `<div class="whead"><div><h1>${title}</h1><div class="crumb">Overview ${ic('right')} ${crumb}</div></div><div class="ctrls"><span class="demo">● Synthetic demo · 90-day sample through ${demoDateLabel()}</span>${ctrls}</div></div>`;
 const rangeBtn = () =>
   `<button class="cbtn" id="pg-range">${{ 7: 'Last 7 days', 14: 'Last 14 days', 30: 'Last 30 days' }[ST.range]}<span class="cic">${ic('down')}</span></button>`;
 function bindRange(cb) {
@@ -109,13 +109,17 @@ function skeleton(cb) {
   setTimeout(cb, RM ? 0 : 320);
 }
 const fmtDate = (iso) =>
-  new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
 const fmtRel = (iso) => {
-  const m = Math.round((Date.now() - new Date(iso)) / 6e4);
+  const m = Math.round((DEMO_NOW - new Date(iso)) / 6e4);
   return m < 1 ? 'Just now' : fmtAgo(m);
 };
 function rescueHours(p, days) {
-  const from = Date.now() - days * 86400000;
+  const from = DEMO_NOW.getTime() - days * 86400000;
   return window.__ADHERIUM_BOOT__.events
     .filter(
       (event) =>
@@ -150,17 +154,10 @@ function setAlert(a, patch, msg) {
     .then(({ item }) => {
       a.status = item.status;
       a.by = item.assignedTo || item.acknowledgedBy || null;
-      a.mins = Math.max(
-        0,
-        Math.round(
-          (Date.now() - new Date(item.createdAt || Date.now()).getTime()) /
-            60000,
-        ),
-      );
       DB.alerts[a.id] = {
         status: a.status,
         by: a.by,
-        at: item.acknowledgedAt || item.createdAt,
+        at: item.acknowledgedAt || DB.alerts[a.id]?.at || item.createdAt,
       };
       audit(msg);
       return item;
@@ -420,9 +417,7 @@ PAGES['patient-profile'] = () => {
   for (let d = 0; d < 14; d++) {
     const y = 18 + d * 13;
     svg += `<text x="0" y="${y + 4}" font-size="10" fill="var(--muted)">${d === 0 ? 'Today' : d === 13 ? '13 d' : ''}</text><line x1="40" x2="680" y1="${y}" y2="${y}" stroke="var(--off)"/>`;
-    const date = new Date();
-    date.setUTCHours(0, 0, 0, 0);
-    date.setUTCDate(date.getUTCDate() - d);
+    const date = new Date(TODAY.getTime() - d * 864e5);
     const key = date.toISOString().slice(0, 10);
     for (const event of events.filter(
       (item) => String(item.occurredAt).slice(0, 10) === key,
