@@ -313,9 +313,13 @@ h3 {
   color: var(--nav-text);
   font-weight: 400;
   font-size: 13.5px;
+  line-height: 1.25;
   transition:
     background 0.25s var(--ease),
     color 0.25s;
+}
+.nav-i span {
+  min-width: 0;
 }
 .nav-i svg {
   width: 19px;
@@ -1127,6 +1131,11 @@ h3 {
   padding: 14px 16px;
   border: 0;
   text-align: left;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
   transition:
     background 0.25s,
     box-shadow 0.25s;
@@ -1768,6 +1777,13 @@ select.sel {
   display: block;
   margin: 12px auto 0;
 }
+.btn.more {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  margin: 12px auto 0;
+}
 .split {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
@@ -1985,10 +2001,18 @@ select.sel {
   border-radius: 20px;
   padding: 14px;
   text-align: left;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
   transition:
     background 0.25s,
     box-shadow 0.25s,
     transform 0.3s var(--ease);
+}
+.dev .st {
+  align-self: flex-start;
 }
 .dev:hover {
   transform: translateY(-2px);
@@ -2013,7 +2037,8 @@ select.sel {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 10px;
+  margin-top: auto;
+  padding-top: 10px;
   font-size: 11.5px;
   color: var(--muted);
 }
@@ -2054,9 +2079,11 @@ select.sel {
   }
 }
 .pipe {
-  display: flex;
+  display: grid;
+  grid-template-columns:
+    64px minmax(20px, 1fr) 64px minmax(20px, 1fr)
+    64px minmax(20px, 1fr) 64px;
   align-items: center;
-  gap: 0;
   margin: 8px 0 6px;
 }
 .node {
@@ -2082,16 +2109,23 @@ select.sel {
   color: #fff;
 }
 .link {
-  flex: 1;
-  height: 2px;
-  background: var(--line);
+  height: 6px;
   position: relative;
   overflow: hidden;
   min-width: 20px;
 }
+.link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 2px;
+  height: 2px;
+  background: var(--line);
+}
 .link i {
   position: absolute;
-  top: -2px;
+  top: 0;
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -2106,21 +2140,36 @@ select.sel {
 }
 @keyframes flow {
   from {
-    left: -6px;
+    left: 0;
   }
   to {
-    left: 100%;
+    left: calc(100% - 6px);
   }
 }
 .pipe-l {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns:
+    64px minmax(20px, 1fr) 64px minmax(20px, 1fr)
+    64px minmax(20px, 1fr) 64px;
+  align-items: flex-start;
   font-size: 12px;
   color: var(--muted);
   text-align: center;
 }
 .pipe-l span {
-  width: 80px;
+  width: 100%;
+}
+.pipe-l span:nth-child(1) {
+  grid-column: 1;
+}
+.pipe-l span:nth-child(2) {
+  grid-column: 3;
+}
+.pipe-l span:nth-child(3) {
+  grid-column: 5;
+}
+.pipe-l span:nth-child(4) {
+  grid-column: 7;
 }
 .alert {
   display: grid;
@@ -2218,6 +2267,18 @@ select.sel {
   opacity: 0.4;
   pointer-events: none;
 }
+#rd-del {
+  display: grid;
+  width: 42px;
+  flex: none;
+  padding: 0;
+  place-items: center;
+}
+#rd-del svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
 .btn,
 .btn-blue,
 .chip,
@@ -2258,6 +2319,8 @@ textarea.inp {
   padding: 12px 14px;
   resize: vertical;
   line-height: 1.45;
+  font: inherit;
+  color: inherit;
 }
 .inp:focus {
   border-color: var(--blue);
@@ -2376,13 +2439,17 @@ textarea.inp {
 .tpl small {
   opacity: 0.7;
   font-size: 12px;
+  min-height: 2.9em;
 }
 .drop {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   min-height: 112px;
-  border: 1.5px dashed var(--hover-line);
-  border-radius: 22px;
+  border: 2px dashed var(--hover-line);
+  border-radius: 18px;
   padding: 18px 16px;
   text-align: center;
   color: var(--muted);
@@ -2557,12 +2624,18 @@ textarea.inp {
     min-width: 0;
     flex-basis: 100%;
   }
+  .pipe,
+  .pipe-l {
+    grid-template-columns:
+      48px minmax(20px, 1fr) 48px minmax(20px, 1fr)
+      48px minmax(20px, 1fr) 48px;
+  }
   .pipe .node {
     width: 48px;
     height: 48px;
   }
   .pipe-l span {
-    width: 60px;
+    width: 100%;
   }
 }
 @media (max-width: 620px) {
