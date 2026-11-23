@@ -10,6 +10,14 @@
   --sky: #b9daff;
   --line: #e8e8e8;
   --off: #ebebeb;
+  --soft-text: #5c5c5c;
+  --nav-text: #3b3b3b;
+  --chip-text: #555555;
+  --hover-line: #d6d6d6;
+  --btn-hover: #e6e6e6;
+  --row-hover: #eaf3ff;
+  --drop-over: #eef6ff;
+  --seg-on: #ffffff;
   --ok: #1e9e5a;
   --warn: #c77a00;
   --bad: #d93b3b;
@@ -32,6 +40,14 @@
     --line: #2a2a2a;
     --off: #2a2a2a;
     --sky: #1d4e86;
+    --soft-text: #bdbdbd;
+    --nav-text: #cfcfcf;
+    --chip-text: #cfcfcf;
+    --hover-line: #474747;
+    --btn-hover: #2e2e2e;
+    --row-hover: #1a2b42;
+    --drop-over: #13243a;
+    --seg-on: #363636;
     color-scheme: dark;
   }
 }
@@ -45,6 +61,14 @@
   --line: #2a2a2a;
   --off: #2a2a2a;
   --sky: #1d4e86;
+  --soft-text: #bdbdbd;
+  --nav-text: #cfcfcf;
+  --chip-text: #cfcfcf;
+  --hover-line: #474747;
+  --btn-hover: #2e2e2e;
+  --row-hover: #1a2b42;
+  --drop-over: #13243a;
+  --seg-on: #363636;
   color-scheme: dark;
 }
 html {
@@ -155,11 +179,14 @@ h3 {
   border-radius: 99px;
   padding: 11px 18px;
   font-weight: 500;
-  color: #5c5c5c;
+  color: var(--soft-text);
   white-space: nowrap;
   position: relative;
   z-index: 1;
   transition: color 0.3s;
+}
+.pill-nav:not(.on):hover {
+  color: var(--text);
 }
 .pill-nav.on {
   color: #fff;
@@ -283,7 +310,7 @@ h3 {
   padding: 10px 14px;
   border-radius: 99px;
   text-align: left;
-  color: #3b3b3b;
+  color: var(--nav-text);
   font-weight: 400;
   font-size: 13.5px;
   transition:
@@ -298,6 +325,7 @@ h3 {
 }
 .nav-i:hover {
   background: var(--bg);
+  color: var(--text);
 }
 .nav-i.on {
   background: var(--ink);
@@ -960,6 +988,9 @@ h3 {
 .ev:hover {
   background: var(--bg);
 }
+.dark .ev:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
 .ev::before {
   content: '';
   position: absolute;
@@ -1002,8 +1033,11 @@ h3 {
     background 0.3s var(--ease),
     color 0.2s;
 }
+.seg button:not(.on):hover {
+  color: var(--text);
+}
 .seg button.on {
-  background: var(--card);
+  background: var(--seg-on);
   color: var(--text);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
@@ -1038,6 +1072,9 @@ h3 {
   transition:
     background 0.25s,
     box-shadow 0.25s;
+}
+.coh-i:hover {
+  box-shadow: 0 0 0 1px var(--hover-line);
 }
 .coh-i.on {
   background: var(--card);
@@ -1484,10 +1521,14 @@ svg.lc text {
   padding: 10px 15px;
   font-size: 13px;
   font-weight: 500;
-  color: #555;
+  color: var(--chip-text);
   transition:
     background 0.25s var(--ease),
     color 0.2s;
+}
+.chip:not(.on):hover {
+  box-shadow: 0 0 0 1px var(--hover-line);
+  color: var(--text);
 }
 .chip .ct {
   margin-left: 6px;
@@ -1580,9 +1621,12 @@ select.sel {
   transition: transform 0.25s var(--ease);
 }
 .rt tbody tr:hover td {
-  background: #eaf3ff;
+  background: var(--row-hover);
+  color: var(--text);
 }
 .rt tbody tr:hover {
+  background: var(--row-hover);
+  color: var(--text);
   transform: translateX(2px);
 }
 .rt .r {
@@ -1804,6 +1848,7 @@ select.sel {
 }
 .dev:hover {
   transform: translateY(-2px);
+  box-shadow: 0 0 0 1px var(--hover-line);
 }
 .dev.on {
   background: var(--card);
@@ -2005,7 +2050,8 @@ select.sel {
     transform 0.15s;
 }
 .btn:hover {
-  background: #e6e6e6;
+  background: var(--btn-hover);
+  color: var(--text);
 }
 .btn:active {
   transform: scale(0.97);
@@ -2173,7 +2219,7 @@ textarea.inp {
   display: block;
   width: 100%;
   min-height: 112px;
-  border: 1.5px dashed #cfcfcf;
+  border: 1.5px dashed var(--hover-line);
   border-radius: 22px;
   padding: 18px 16px;
   text-align: center;
@@ -2185,7 +2231,7 @@ textarea.inp {
 }
 .drop.over {
   border-color: var(--blue);
-  background: #eef6ff;
+  background: var(--drop-over);
 }
 .drop b {
   display: block;
