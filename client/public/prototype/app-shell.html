@@ -522,53 +522,65 @@
         </section>
         <section class="card c6" style="">
           <div class="card-h"><h2>Import history</h2></div>
-          <table class="rt">
-            <thead>
-              <tr>
-                <th>Import</th>
-                <th class="r">Rows</th>
-                <th>Status</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody id="dm-imp">
-              <tr style="cursor: default">
-                <td class="pri" data-l="Import">data</td>
-                <td class="r" data-l="Rows">248</td>
-                <td data-l="Status"><span class="tag">Completed</span></td>
-                <td data-l="Date">Nov 9</td>
-              </tr>
-              <tr style="cursor: default">
-                <td class="pri" data-l="Import">tracts-26107</td>
-                <td class="r" data-l="Rows">18</td>
-                <td data-l="Status"><span class="tag gray">Failed</span></td>
-                <td data-l="Date">Nov 9</td>
-              </tr>
-              <tr style="cursor: default">
-                <td class="pri" data-l="Import">
-                  Enrollment batch, spring clinic
-                </td>
-                <td class="r" data-l="Rows">42</td>
-                <td data-l="Status"><span class="tag">Completed</span></td>
-                <td data-l="Date">Nov 6</td>
-              </tr>
-              <tr style="cursor: default">
-                <td class="pri" data-l="Import">Device assignment update</td>
-                <td class="r" data-l="Rows">18</td>
-                <td data-l="Status">
-                  <span class="tag blue">Completed with warnings</span>
-                </td>
-                <td data-l="Date">Oct 31</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="rt-wrap">
+            <table class="rt import-history-table">
+              <thead>
+                <tr>
+                  <th>Import</th>
+                  <th class="r">Rows</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="dm-imp">
+                <tr style="cursor: default">
+                  <td class="pri" data-l="Import">
+                    <span class="import-history-name">data</span>
+                  </td>
+                  <td class="r" data-l="Rows">248</td>
+                  <td data-l="Status"><span class="tag">Completed</span></td>
+                  <td data-l="Date">Nov 9</td>
+                </tr>
+                <tr style="cursor: default">
+                  <td class="pri" data-l="Import">
+                    <span class="import-history-name">tracts-26107</span>
+                  </td>
+                  <td class="r" data-l="Rows">18</td>
+                  <td data-l="Status"><span class="tag gray">Failed</span></td>
+                  <td data-l="Date">Nov 9</td>
+                </tr>
+                <tr style="cursor: default">
+                  <td class="pri" data-l="Import">
+                    <span class="import-history-name"
+                      >Enrollment batch, spring clinic</span
+                    >
+                  </td>
+                  <td class="r" data-l="Rows">42</td>
+                  <td data-l="Status"><span class="tag">Completed</span></td>
+                  <td data-l="Date">Nov 6</td>
+                </tr>
+                <tr style="cursor: default">
+                  <td class="pri" data-l="Import">
+                    <span class="import-history-name"
+                      >Device assignment update</span
+                    >
+                  </td>
+                  <td class="r" data-l="Rows">18</td>
+                  <td data-l="Status">
+                    <span class="tag blue">Completed with warnings</span>
+                  </td>
+                  <td data-l="Date">Oct 31</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </section>
         <section class="card c6" style="">
           <div class="card-h">
             <h2>Audit log</h2>
             <span class="k">Actions taken in this browser</span>
           </div>
-          <div id="dm-audit">
+          <div class="timeline-list" id="dm-audit">
             <div class="ev" style="--c: #087bff; cursor: default">
               <b>Imported data (248 rows)</b><span class="t">2 min ago</span
               ><small>Respiratory Care Team</small>

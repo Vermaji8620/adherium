@@ -207,8 +207,8 @@ PAGES.patients = () => {
         .join('')}</div>
       <select class="sel" id="pm-coh" aria-label="Cohort"><option value="all">All cohorts</option><option value="asthma" ${PM.coh === 'asthma' ? 'selected' : ''}>Asthma</option><option value="copd" ${PM.coh === 'copd' ? 'selected' : ''}>COPD</option></select>
       <select class="sel" id="pm-sort" aria-label="Sort"><option value="risk">Sort by need</option><option value="adh" ${PM.sort === 'adh' ? 'selected' : ''}>Lowest adherence</option><option value="rescue" ${PM.sort === 'rescue' ? 'selected' : ''}>Most rescue use</option><option value="id" ${PM.sort === 'id' ? 'selected' : ''}>Patient ID</option></select></div>
-    <div class="split"><section class="card" style="padding:16px 14px"><table class="rt"><thead><tr><th>Patient</th><th>Cohort</th><th>Last 14 days</th><th class="r">Adherence</th><th class="r">Rescue, 7d</th><th>Inhaler</th><th>Status</th></tr></thead><tbody id="pm-body"></tbody></table><div id="pm-more"></div></section>
-    <aside class="card dark sticky" id="pm-side"></aside></div>`;
+    <div class="pm-layout"><aside class="card dark pm-followup" id="pm-side"></aside>
+    <section class="card pm-table-card"><div class="rt-wrap"><table class="rt pm-table"><thead><tr><th>Patient</th><th>Cohort</th><th>Last 14 days</th><th class="r">Adherence</th><th class="r">Rescue, 7d</th><th>Inhaler</th><th>Status</th></tr></thead><tbody id="pm-body"></tbody></table></div><div id="pm-more"></div></section></div>`;
   function rows() {
     let r = base.filter(
       (p) =>
@@ -269,16 +269,16 @@ PAGES.patients = () => {
       });
     const fu = base.filter((p) => statusOf(p) === 'fu');
     $('#pm-side').innerHTML =
-      `<h2>Follow-up <b>today</b></h2><p style="color:#BDBDBD;font-size:13px;margin:6px 0 16px">${fu.length} patients are below the 80% adherence target or using rescue inhalers more than usual.</p>
-      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">${ringSVG(counts.on / counts.all, 96, 10, '#087BFF', 'Share on track')}<div><div class="big" style="color:#fff">${Math.round((counts.on / counts.all) * 100)}<small style="color:#BDBDBD">%</small></div><small style="color:#BDBDBD">on track</small></div></div>
-      ${fu
+      `<div class="pm-fu-a"><div><h2>Follow-up <b>today</b></h2><p style="color:#BDBDBD;font-size:13px;margin:6px 0 16px">${fu.length} patients are below the 80% adherence target or using rescue inhalers more than usual.</p></div>
+      <div class="pm-fu-stat" style="display:flex;align-items:center;gap:16px;margin-bottom:16px">${ringSVG(counts.on / counts.all, 96, 10, '#087BFF', 'Share on track')}<div><div class="big" style="color:#fff">${Math.round((counts.on / counts.all) * 100)}<small style="color:#BDBDBD">%</small></div><small style="color:#BDBDBD">on track</small></div></div>
+      <button class="btn-blue" id="pm-al" style="margin-top:12px"><span>Open alerts</span><i>${ic('arrow')}</i></button></div>
+      <div class="timeline-list pm-fu-b">${fu
         .slice(0, 5)
         .map(
           (p) =>
             `<button class="ev" data-id="${p.id}" style="--c:#7FB7F7;color:#fff"><b>${p.id}</b><span class="t" style="color:#9A9A9A">${(adh(p, 0, ST.range) * 100).toFixed(0)}%</span><small style="color:#9A9A9A">${p.cohort.short}. ${rescueSum(p, 0, 7)} rescue uses this week</small></button>`,
         )
-        .join('')}
-      <button class="btn-blue" id="pm-al" style="margin-top:12px"><span>Open alerts</span><i>${ic('arrow')}</i></button>`;
+        .join('')}</div>`;
     $$('#pm-side [data-id]').forEach(
       (b) =>
         (b.onclick = () => {
@@ -644,7 +644,7 @@ PAGES.devices = () => {
   $('#dv-hist').innerHTML = bins
     .map(
       (b, i) =>
-        `<div class="bar ${i < 2 ? 'h-blue' : i < 3 ? 'h-sky' : 'h-ink'}" style="height:${Math.max(8, (bc[i] / mx) * 100)}%;border-radius:12px"><span class="bl">${bc[i]}</span><span class="wk">${b[2]}</span></div>`,
+        `<div class="bar ${i < 2 ? 'h-blue' : i < 3 ? 'h-sky' : 'h-ink'} ${Math.max(8, (bc[i] / mx) * 100) <= 20 ? 'short' : ''}" style="height:${Math.max(8, (bc[i] / mx) * 100)}%;border-radius:12px"><span class="bl">${bc[i]}</span><span class="wk">${b[2]}</span></div>`,
     )
     .join('');
   if (!RM)
@@ -832,7 +832,7 @@ PAGES['medication-adherence'] = () => {
   const pm = observedDays ? pmTaken / observedDays : 0;
   const overall = P.reduce((a, p) => a + adh(p, 0, ST.range), 0) / P.length;
   const bands = [
-    [0, 0.5, 'Under 50%'],
+    [0, 0.5, '<50%'],
     [0.5, 0.7, '50–69%'],
     [0.7, 0.8, '70–79%'],
     [0.8, 0.9, '80–89%'],
@@ -936,7 +936,7 @@ PAGES['medication-adherence'] = () => {
   $('#ma-bands').innerHTML = bands
     .map(
       (b, i) =>
-        `<div class="bar ${i >= 3 ? 'h-blue' : i === 2 ? 'h-sky' : 'h-ink'}" style="height:${Math.max(8, (bc[i] / mxb) * 100)}%;border-radius:14px"><span class="bl">${bc[i]}</span><span class="wk">${b[2]}</span></div>`,
+        `<div class="bar ${i >= 3 ? 'h-blue' : i === 2 ? 'h-sky' : 'h-ink'} ${Math.max(8, (bc[i] / mxb) * 100) <= 20 ? 'short' : ''}" style="height:${Math.max(8, (bc[i] / mxb) * 100)}%;border-radius:14px"><span class="bl">${bc[i]}</span><span class="wk">${b[2]}</span></div>`,
     )
     .join('');
   const wd = Array.from({ length: 7 }, (_, k) => {
@@ -957,7 +957,7 @@ PAGES['medication-adherence'] = () => {
   $('#ma-wd').innerHTML = wd
     .map(
       (v, k) =>
-        `<div class="bar ${k === best ? 'h-blue' : v < (lo + hi) / 2 ? 'h-ink' : 'h-sky'}" style="height:${((v - lo) / (hi - lo)) * 100}%;border-radius:14px"><span class="bl">${(v * 100).toFixed(0)}</span><span class="wk">${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][k]}</span></div>`,
+        `<div class="bar ${k === best ? 'h-blue' : v < (lo + hi) / 2 ? 'h-ink' : 'h-sky'} ${((v - lo) / (hi - lo)) * 100 <= 20 ? 'short' : ''}" style="height:${((v - lo) / (hi - lo)) * 100}%;border-radius:14px"><span class="bl">${(v * 100).toFixed(0)}</span><span class="wk">${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][k]}</span></div>`,
     )
     .join('');
   $$('#ma-bands .bar, #ma-wd .bar').forEach(
@@ -1170,7 +1170,7 @@ PAGES['respiratory-analytics'] = () => {
   $('#ra-sfd').innerHTML = sb
     .map(
       (bin, i) =>
-        `<div class="bar ${i >= 3 ? 'h-blue' : i === 2 ? 'h-sky' : 'h-ink'}" style="height:${Math.max(8, (sbc[i] / sm) * 100)}%;border-radius:14px;cursor:default"><span class="bl">${sbc[i]}</span><span class="wk">${bin[2]}</span></div>`,
+        `<div class="bar ${i >= 3 ? 'h-blue' : i === 2 ? 'h-sky' : 'h-ink'} ${Math.max(8, (sbc[i] / sm) * 100) <= 20 ? 'short' : ''}" style="height:${Math.max(8, (sbc[i] / sm) * 100)}%;border-radius:14px;cursor:default"><span class="bl">${sbc[i]}</span><span class="wk">${bin[2]}</span></div>`,
     )
     .join('');
   if (!RM)
@@ -1684,7 +1684,7 @@ PAGES.reports = () => {
           `<button class="tpl ${c} c3" data-t="${k}" style="grid-column:span 3"><span style="display:flex;justify-content:space-between;width:100%"><span class="wcirc ${c ? '' : 'g'}" style="${c ? '' : 'background:var(--bg);color:var(--text)'}">${ic('doc')}</span><span class="wcirc" style="${c ? '' : 'background:var(--ink);color:#fff'}">${ic('arrow')}</span></span><h3>${t}</h3><small>${d}</small></button>`,
       )
       .join('')}</div>
-    <div class="split rev"><section class="card"><div class="card-h"><h2>Saved reports</h2><span class="k">${DB.reports.length}</span></div><div id="rp-list"></div></section><section class="card" id="rp-doc"></section></div>`;
+    <div class="split rev"><section class="card"><div class="card-h"><h2>Saved reports</h2><span class="k">${DB.reports.length}</span></div><div class="timeline-list" id="rp-list"></div></section><section class="card" id="rp-doc"></section></div>`;
   function list() {
     $('#rp-list').innerHTML = DB.reports
       .map(
@@ -1766,7 +1766,7 @@ PAGES.reports = () => {
       )
         .map(([c, l]) => `<span><i class="${c}"></i>${l}</span>`)
         .join('')}</div>
-      <table class="rt"><thead><tr><th>Patient</th><th>Cohort</th><th class="r">Adherence</th><th class="r">Rescue</th><th>Inhaler</th></tr></thead><tbody>${s.P.slice()
+      <div class="rt-wrap"><table class="rt report-table"><thead><tr><th>Patient</th><th>Cohort</th><th class="r">Adherence</th><th class="r">Rescue</th><th>Inhaler</th></tr></thead><tbody>${s.P.slice()
         .sort((a, b) => adh(a, 0, r.range) - adh(b, 0, r.range))
         .slice(0, 6)
         .map(
@@ -1775,7 +1775,7 @@ PAGES.reports = () => {
         )
         .join(
           '',
-        )}</tbody></table><div class="k" style="margin-top:6px">Lowest adherence first</div>`;
+        )}</tbody></table></div><div class="k" style="margin-top:6px">Lowest adherence first</div>`;
     $$('#rp-doc tr[data-id]').forEach(
       (tr) =>
         (tr.onclick = () => {
@@ -1929,14 +1929,14 @@ PAGES['data-management'] = () => {
         )}<button class="btn" id="dm-fw" style="margin-top:4px">Schedule update for older sensors</button></section>
       <section class="card c4"><div class="card-h"><h2>Import enrollment</h2></div><label class="drop" id="dm-drop"><input type="file" accept=".csv,text/csv" id="dm-file" hidden><b>Drop a CSV or browse</b>Columns: patient_id, cohort. Validated by the local API; enrollment is not performed</label>
         <button class="btn" id="dm-sample" style="margin-top:10px;width:100%">Use a sample file with errors</button><div id="dm-res" style="margin-top:10px"></div></section>
-      <section class="card c6"><div class="card-h"><h2>Import history</h2></div><table class="rt import-history-table"><thead><tr><th>Import</th><th class="r">Rows</th><th>Status</th><th>Date</th></tr></thead><tbody id="dm-imp"></tbody></table></section>
-      <section class="card c6"><div class="card-h"><h2>Audit log</h2><span class="k">Actions recorded by the local API</span></div><div id="dm-audit"></div></section>
+      <section class="card c6"><div class="card-h"><h2>Import history</h2></div><div class="rt-wrap"><table class="rt import-history-table"><thead><tr><th>Import</th><th class="r">Rows</th><th>Status</th><th>Date</th></tr></thead><tbody id="dm-imp"></tbody></table></div></section>
+      <section class="card c6"><div class="card-h"><h2>Audit log</h2><span class="k">Actions recorded by the local API</span></div><div class="timeline-list" id="dm-audit"></div></section>
     </div>`;
   const imp = () => {
     $('#dm-imp').innerHTML = DB.imports
       .map(
         (i) =>
-          `<tr style="cursor:default"><td class="pri" data-l="Import">${i.name}</td><td class="r" data-l="Rows">${i.rows}</td><td data-l="Status"><span class="tag ${i.status === 'Completed' ? '' : i.status === 'Failed' ? 'gray' : 'blue'}">${i.status}</span></td><td data-l="Date">${fmtDate(i.at)}</td></tr>`,
+          `<tr style="cursor:default"><td class="pri" data-l="Import"><span class="import-history-name">${i.name}</span></td><td class="r" data-l="Rows">${i.rows}</td><td data-l="Status"><span class="tag ${i.status === 'Completed' ? '' : i.status === 'Failed' ? 'gray' : 'blue'}">${i.status}</span></td><td data-l="Date">${fmtDate(i.at)}</td></tr>`,
       )
       .join('');
   };

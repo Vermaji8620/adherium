@@ -739,7 +739,7 @@ function openCell(c, btn) {
   openDrawer(`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><div style="color:var(--muted);font-size:13px">${c.c.name}</div><h2 style="font-size:24px;font-weight:500;margin-top:4px">${dayLong(c.d)}</h2></div><button class="arrow" data-close aria-label="Close">${ic('x')}</button></div>
     <div class="big" style="margin:20px 0 4px">${(c.v * 100).toFixed(1)}<small>%</small></div><div style="color:var(--muted);font-size:13px">of ${c.n * 2} scheduled controller doses taken</div>
     <h3 style="font-size:15px;font-weight:500;margin:24px 0 10px">Patients with missed doses that day</h3>
-    ${ps.length ? ps.map((x) => `<button class="ev" data-pt="${x.p.id}" style="--c:${x.v ? '#B9DAFF' : '#111'}"><b>${x.p.id}</b><span class="t">${x.v ? '1 of 2 taken' : 'Both missed'}</span><small>${x.p.status === 'offline' ? 'Inhaler offline' : 'Inhaler connected'}</small></button>`).join('') : '<div class="empty"><b>No missed doses</b>Every patient in this cohort took both doses.</div>'}`);
+    ${ps.length ? `<div class="timeline-list">${ps.map((x) => `<button class="ev" data-pt="${x.p.id}" style="--c:${x.v ? '#B9DAFF' : '#111'}"><b>${x.p.id}</b><span class="t">${x.v ? '1 of 2 taken' : 'Both missed'}</span><small>${x.p.status === 'offline' ? 'Inhaler offline' : 'Inhaler connected'}</small></button>`).join('')}</div>` : '<div class="empty"><b>No missed doses</b>Every patient in this cohort took both doses.</div>'}`);
   $$('#drawer [data-pt]').forEach(
     (b) => (b.onclick = () => openPatient(b.dataset.pt)),
   );
@@ -786,6 +786,7 @@ function drawTrend(animate) {
   const P = pool();
   const el = $('#bars');
   const ctrl = ST.trendMode === 'controller';
+  el.classList.toggle('has-target', ctrl);
   if (window.__ADHERIUM_BOOT__.historyDays < 42) {
     el.innerHTML =
       '<div class="empty"><b>Loading history</b>Six-week trends will appear as the remaining adherence history loads.</div>';
@@ -798,7 +799,7 @@ function drawTrend(animate) {
     const v = ctrl
       ? P.reduce((a, p) => a + adh(p, k * 7, k * 7 + 7), 0) / P.length
       : P.reduce((a, p) => a + rescueSum(p, k * 7, k * 7 + 7), 0) / P.length;
-    return { k, v, lbl: k === 0 ? 'This wk' : k + ' wk ago' };
+    return { k, v, lbl: k === 0 ? 'This wk' : k + 'w ago' };
   });
   const max = ctrl
       ? Math.min(1, Math.max(...weeks.map((w) => w.v)) + 0.04)
@@ -814,7 +815,8 @@ function drawTrend(animate) {
           ? w.v >= 0.8
           : w.v <= weeks.reduce((a, x) => a + x.v, 0) / 6;
         const cls = w.k === 0 ? 'h-blue' : good ? 'h-sky' : 'h-ink';
-        return `<div class="bar ${cls}" data-i="${i}" style="height:${h(w.v)}%" role="img" aria-label="${w.lbl}: ${ctrl ? pct(w.v) : w.v.toFixed(2) + ' rescue uses per patient'}"><span class="bl">${prev ? ic(up ? 'up' : 'dn', 2.4) : ''}${ctrl ? (w.v * 100).toFixed(0) + '%' : w.v.toFixed(1)}</span><span class="wk">${w.lbl}</span></div>`;
+        const height = h(w.v);
+        return `<div class="bar ${cls}${height <= 20 ? ' short' : ''}" data-i="${i}" style="height:${height}%" role="img" aria-label="${w.lbl}: ${ctrl ? pct(w.v) : w.v.toFixed(2) + ' rescue uses per patient'}"><span class="bl">${prev ? ic(up ? 'up' : 'dn', 2.4) : ''}${ctrl ? (w.v * 100).toFixed(0) + '%' : w.v.toFixed(1)}</span><span class="wk">${w.lbl}</span></div>`;
       })
       .join('') +
     (ctrl
@@ -836,7 +838,7 @@ function drawTrend(animate) {
     ? 'Change in controller adherence over six weeks'
     : 'Change in rescue inhaler use per patient over six weeks';
   $('#tr-leg').innerHTML = ctrl
-    ? '<span><i class="h-blue"></i>This week</span><span><i class="h-sky"></i>At or above target</span><span><i class="h-ink"></i>Below target</span>'
+    ? '<span><i class="h-blue"></i>This week</span><span><i class="h-sky"></i>At or above target</span><span><i class="h-ink"></i>Below target</span><span><i class="target-key"></i>80% target</span>'
     : '<span><i class="h-blue"></i>This week</span><span><i class="h-sky"></i>At or below average</span><span><i class="h-ink"></i>Above average</span>';
   if (animate && !RM)
     safeFrom($$('.bar', el), {
