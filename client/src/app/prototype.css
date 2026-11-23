@@ -8,6 +8,13 @@
   --blue: #087bff;
   --ink: #111111;
   --sky: #b9daff;
+  --solid: #111111;
+  --on-solid: #ffffff;
+  --solid-hover: #2a2a2a;
+  --data-ink: #111111;
+  --data-ink2: #2b2b2b;
+  --gauge-off: #e6e6e6;
+  --av-text: #0458ba;
   --line: #e8e8e8;
   --off: #ebebeb;
   --soft-text: #5c5c5c;
@@ -21,6 +28,15 @@
   --ok: #1e9e5a;
   --warn: #c77a00;
   --bad: #d93b3b;
+  --tag-ok-bg: #e3f6ea;
+  --tag-blue-bg: #e4f0ff;
+  --tag-blue: #087bff;
+  --demo-bg: #fff3d6;
+  --demo-text: #8a5a00;
+  --tip-bg: #111111;
+  --tip-text: #ffffff;
+  --inv-edge: transparent;
+  --sk-hi: #f7f7f7;
   --font:
     'Onest', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -36,10 +52,19 @@
     --card: #1b1b1b;
     --work: #121212;
     --text: #f2f2f2;
+    --ink: #0a0a0a;
     --muted: #9a9a9a;
     --line: #2a2a2a;
     --off: #2a2a2a;
     --sky: #1d4e86;
+    --solid: #f2f2f2;
+    --on-solid: #111111;
+    --solid-hover: #d4d4d4;
+    --data-ink: #6e6e6e;
+    --data-ink2: #5a5a5a;
+    --gauge-off: #3a3a3a;
+    --av-text: #d6e9ff;
+    --ok: #3ccb7f;
     --soft-text: #bdbdbd;
     --nav-text: #cfcfcf;
     --chip-text: #cfcfcf;
@@ -48,6 +73,15 @@
     --row-hover: #1a2b42;
     --drop-over: #13243a;
     --seg-on: #363636;
+    --tag-ok-bg: #123522;
+    --tag-blue-bg: #0f2a4d;
+    --tag-blue: #6cb2ff;
+    --demo-bg: #3a2c0a;
+    --demo-text: #f5c76b;
+    --tip-bg: #f2f2f2;
+    --tip-text: #111111;
+    --inv-edge: #2e2e2e;
+    --sk-hi: #262626;
     color-scheme: dark;
   }
 }
@@ -57,10 +91,19 @@
   --card: #1b1b1b;
   --work: #121212;
   --text: #f2f2f2;
+  --ink: #0a0a0a;
   --muted: #9a9a9a;
   --line: #2a2a2a;
   --off: #2a2a2a;
   --sky: #1d4e86;
+  --solid: #f2f2f2;
+  --on-solid: #111111;
+  --solid-hover: #d4d4d4;
+  --data-ink: #6e6e6e;
+  --data-ink2: #5a5a5a;
+  --gauge-off: #3a3a3a;
+  --av-text: #d6e9ff;
+  --ok: #3ccb7f;
   --soft-text: #bdbdbd;
   --nav-text: #cfcfcf;
   --chip-text: #cfcfcf;
@@ -69,6 +112,15 @@
   --row-hover: #1a2b42;
   --drop-over: #13243a;
   --seg-on: #363636;
+  --tag-ok-bg: #123522;
+  --tag-blue-bg: #0f2a4d;
+  --tag-blue: #6cb2ff;
+  --demo-bg: #3a2c0a;
+  --demo-text: #f5c76b;
+  --tip-bg: #f2f2f2;
+  --tip-text: #111111;
+  --inv-edge: #2e2e2e;
+  --sk-hi: #262626;
   color-scheme: dark;
 }
 html {
@@ -115,7 +167,11 @@ h3 {
   background: repeating-linear-gradient(135deg, #087bff 0 5px, #2a8dff 5px 9px);
 }
 .h-ink {
-  background: repeating-linear-gradient(135deg, #111 0 5px, #2b2b2b 5px 9px);
+  background: repeating-linear-gradient(
+    135deg,
+    var(--data-ink) 0 5px,
+    var(--data-ink2) 5px 9px
+  );
 }
 .h-sky {
   background: repeating-linear-gradient(135deg, #b9daff 0 5px, #cde4ff 5px 9px);
@@ -259,7 +315,7 @@ h3 {
   height: 44px;
   border-radius: 50%;
   background: var(--sky);
-  color: #0458ba;
+  color: var(--av-text);
   display: grid;
   place-items: center;
   font-weight: 600;
@@ -332,8 +388,8 @@ h3 {
   color: var(--text);
 }
 .nav-i.on {
-  background: var(--ink);
-  color: #fff;
+  background: var(--solid);
+  color: var(--on-solid);
   padding: 13px 16px;
 }
 .nav-i.on .chev {
@@ -471,8 +527,8 @@ h3 {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #8a5a00;
-  background: #fff3d6;
+  color: var(--demo-text);
+  background: var(--demo-bg);
   border-radius: 99px;
   padding: 5px 11px;
   font-weight: 500;
@@ -543,9 +599,9 @@ h3 {
     transform 0.35s var(--ease);
 }
 .arrow:hover {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: #fff;
+  background: var(--solid);
+  border-color: var(--solid);
+  color: var(--on-solid);
   transform: rotate(45deg);
 }
 .arrow svg {
@@ -647,6 +703,7 @@ h3 {
   background: var(--ink);
   color: #fff;
   overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--inv-edge);
 }
 .dark h2 {
   font-size: 22px;
@@ -757,12 +814,12 @@ h3 {
   font-weight: 600;
   border-radius: 99px;
   padding: 3px 9px;
-  background: #e3f6ea;
+  background: var(--tag-ok-bg);
   color: var(--ok);
 }
 .tag.blue {
-  background: #e4f0ff;
-  color: var(--blue);
+  background: var(--tag-blue-bg);
+  color: var(--tag-blue);
 }
 .tag.gray {
   background: var(--bg);
@@ -780,8 +837,9 @@ h3 {
   border-top: 1px solid var(--line);
 }
 .report {
-  background: #000;
+  background: var(--ink);
   color: #fff;
+  box-shadow: inset 0 0 0 1px var(--inv-edge);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -842,8 +900,8 @@ h3 {
 }
 .pill-dark {
   display: inline-block;
-  background: var(--ink);
-  color: #fff;
+  background: var(--solid);
+  color: var(--on-solid);
   border-radius: 99px;
   padding: 6px 14px;
   font-size: 12.5px;
@@ -1145,7 +1203,7 @@ h3 {
 }
 .coh-i.on {
   background: var(--card);
-  box-shadow: 0 0 0 1.5px var(--ink);
+  box-shadow: 0 0 0 1.5px var(--solid);
 }
 .coh-i .n {
   font-size: 26px;
@@ -1196,8 +1254,8 @@ svg.lc text {
   position: fixed;
   z-index: 90;
   pointer-events: none;
-  background: var(--ink);
-  color: #fff;
+  background: var(--tip-bg);
+  color: var(--tip-text);
   font-size: 12px;
   border-radius: 12px;
   padding: 8px 11px;
@@ -1356,8 +1414,8 @@ svg.lc text {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 .toast {
-  background: var(--ink);
-  color: #fff;
+  background: var(--tip-bg);
+  color: var(--tip-text);
   border-radius: 99px;
   padding: 11px 18px;
   font-size: 13px;
@@ -1391,7 +1449,7 @@ svg.lc text {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.55),
+    color-mix(in srgb, var(--card) 55%, transparent),
     transparent
   );
   transform: translateX(-100%);
@@ -1616,14 +1674,25 @@ svg.lc text {
   font-weight: 400;
 }
 .chip.on {
-  background: var(--ink);
-  color: #fff;
+  background: var(--solid);
+  color: var(--on-solid);
 }
 .chip.on .ct {
-  color: #bdbdbd;
+  color: inherit;
+  opacity: 0.65;
 }
 .chip.blue.on {
   background: var(--blue);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .chip.blue.on {
+    background: var(--solid);
+    color: var(--on-solid);
+  }
+}
+:root[data-theme='dark'] .chip.blue.on {
+  background: var(--solid);
+  color: var(--on-solid);
 }
 select.sel {
   height: 44px;
@@ -1637,6 +1706,14 @@ select.sel {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23171717' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) select.sel {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23F2F2F2' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  }
+}
+:root[data-theme='dark'] select.sel {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23F2F2F2' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
 .rt {
   width: 100%;
@@ -1879,6 +1956,7 @@ select.sel {
 .kpi.dk {
   background: var(--ink);
   color: #fff;
+  box-shadow: inset 0 0 0 1px var(--inv-edge);
 }
 .kpi.dk .k {
   color: #bdbdbd;
@@ -1935,6 +2013,16 @@ select.sel {
 .cday.h-sky,
 .cday.h-off {
   color: #171717;
+}
+:root[data-theme='dark'] .cday.h-sky,
+:root[data-theme='dark'] .cday.h-off {
+  color: var(--text);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .cday.h-sky,
+  :root:not([data-theme='light']) .cday.h-off {
+    color: var(--text);
+  }
 }
 .cday.empty {
   background: none;
@@ -2020,7 +2108,7 @@ select.sel {
 }
 .dev.on {
   background: var(--card);
-  box-shadow: 0 0 0 1.5px var(--ink);
+  box-shadow: 0 0 0 1.5px var(--solid);
 }
 .dev b {
   display: block;
@@ -2191,7 +2279,7 @@ select.sel {
   transform: translateX(2px);
 }
 .alert.on {
-  box-shadow: 0 0 0 1.5px var(--ink);
+  box-shadow: 0 0 0 1.5px var(--solid);
 }
 .sev {
   width: 40px;
@@ -2205,8 +2293,8 @@ select.sel {
   height: 18px;
 }
 .sev.high {
-  background: #111;
-  color: #fff;
+  background: var(--solid);
+  color: var(--on-solid);
 }
 .sev.med {
   background: var(--sky);
@@ -2250,11 +2338,12 @@ select.sel {
   transform: scale(0.97);
 }
 .btn.dk {
-  background: var(--ink);
-  color: #fff;
+  background: var(--solid);
+  color: var(--on-solid);
 }
 .btn.dk:hover {
-  background: #2a2a2a;
+  background: var(--solid-hover);
+  color: var(--on-solid);
 }
 .btn.bl {
   background: var(--blue);
@@ -2498,7 +2587,7 @@ textarea.inp {
   background: linear-gradient(
     90deg,
     var(--card) 25%,
-    #f7f7f7 50%,
+    var(--sk-hi) 50%,
     var(--card) 75%
   );
   background-size: 200% 100%;

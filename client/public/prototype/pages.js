@@ -428,7 +428,7 @@ PAGES['patient-profile'] = () => {
       (item) => String(item.occurredAt).slice(0, 10) === key,
     )) {
       const hr = event.hour ?? new Date(event.occurredAt).getUTCHours();
-      svg += `<circle class="tld" cx="${40 + (hr / 24) * 640}" cy="${y}" r="5.5" fill="${hr < 6 ? '#111' : '#087BFF'}"><title>${dayLong(d)}, ${String(Math.floor(hr)).padStart(2, '0')}:${String(Math.floor((hr % 1) * 60)).padStart(2, '0')}</title></circle>`;
+      svg += `<circle class="tld" cx="${40 + (hr / 24) * 640}" cy="${y}" r="5.5" fill="${hr < 6 ? 'var(--data-ink)' : '#087BFF'}"><title>${dayLong(d)}, ${String(Math.floor(hr)).padStart(2, '0')}:${String(Math.floor((hr % 1) * 60)).padStart(2, '0')}</title></circle>`;
     }
   }
   tl.innerHTML =
@@ -605,7 +605,7 @@ PAGES.devices = () => {
           ['connected', 'Connected', '#087BFF'],
           ['pending', 'Sync pending', '#8A8A8A'],
           ['offline', 'Offline', '#D0D0D0'],
-          ['low', 'Battery under 25%', '#111'],
+          ['low', 'Battery under 25%', 'var(--data-ink)'],
         ]
           .map(
             ([k, l, col]) =>
@@ -668,7 +668,7 @@ PAGES.devices = () => {
       L.slice(0, limit)
         .map(
           (p) =>
-            `<button class="dev ${DV.sel === p.id ? 'on' : ''}" data-id="${p.id}">${devTag(p)}<b>${p.id}</b><small>${p.cohort.short}. Synced ${fmtAgo(p.lastSync)}</small><div class="batt"><span><i style="width:${p.battery}%;background:${p.battery < 26 ? '#111' : '#087BFF'}"></i></span>${p.battery}%</div></button>`,
+            `<button class="dev ${DV.sel === p.id ? 'on' : ''}" data-id="${p.id}">${devTag(p)}<b>${p.id}</b><small>${p.cohort.short}. Synced ${fmtAgo(p.lastSync)}</small><div class="batt"><span><i style="width:${p.battery}%;background:${p.battery < 26 ? 'var(--data-ink)' : '#087BFF'}"></i></span>${p.battery}%</div></button>`,
         )
         .join('') ||
       '<div class="empty"><b>No devices in this group</b>Choose another filter.</div>';
@@ -913,7 +913,7 @@ PAGES['medication-adherence'] = () => {
         .filter((x) => x[1] !== null)
         .map(
           ([c, r]) =>
-            `<div style="display:grid;grid-template-columns:120px 1fr 48px;gap:10px;align-items:center;margin-bottom:10px;font-size:13px"><span>${c.short}</span><div class="hbar"><i data-w="${r * 100}" style="background:${c.id === 'copd' ? '#111' : c.id === 'asthma-p' ? '#7FB7F7' : '#087BFF'}"></i></div><b style="font-weight:600;text-align:right">${(r * 100).toFixed(0)}%</b></div>`,
+            `<div style="display:grid;grid-template-columns:120px 1fr 48px;gap:10px;align-items:center;margin-bottom:10px;font-size:13px"><span>${c.short}</span><div class="hbar"><i data-w="${r * 100}" style="background:${c.id === 'copd' ? 'var(--data-ink)' : c.id === 'asthma-p' ? '#7FB7F7' : '#087BFF'}"></i></div><b style="font-weight:600;text-align:right">${(r * 100).toFixed(0)}%</b></div>`,
         )
         .join('')}
       <div class="k" style="margin:16px 0 8px">${missed.length} patients missed both doses</div><div style="display:flex;flex-wrap:wrap;gap:6px">${missed
@@ -1038,7 +1038,7 @@ PAGES['respiratory-analytics'] = () => {
       a1 = ((h + 1) / 24) * 2 * Math.PI - Math.PI / 2 - 0.02;
     const rr = r0 + (v / mx) * (r1 - r0);
     const p = (a, r) => `${cx + Math.cos(a) * r},${cy + Math.sin(a) * r}`;
-    s += `<path class="cb" data-h="${h}" d="M${p(a0, r0)} L${p(a0, rr)} A${rr},${rr} 0 0 1 ${p(a1, rr)} L${p(a1, r0)} A${r0},${r0} 0 0 0 ${p(a0, r0)}Z" fill="${h < 6 ? '#111' : '#087BFF'}" opacity="${0.35 + (v / mx) * 0.65}"/>`;
+    s += `<path class="cb" data-h="${h}" d="M${p(a0, r0)} L${p(a0, rr)} A${rr},${rr} 0 0 1 ${p(a1, rr)} L${p(a1, r0)} A${r0},${r0} 0 0 0 ${p(a0, r0)}Z" fill="${h < 6 ? 'var(--data-ink)' : '#087BFF'}" opacity="${0.35 + (v / mx) * 0.65}"/>`;
   });
   [0, 6, 12, 18].forEach((h) => {
     const a = (h / 24) * 2 * Math.PI - Math.PI / 2;
@@ -1306,7 +1306,7 @@ PAGES.alerts = () => {
     }
     AL.sel = a.id;
     const p = a.p;
-    el.innerHTML = `<div class="card-h">${fixedLungsIcon()}<span class="tag ${a.sev === 'high' ? '' : 'gray'}" style="${a.sev === 'high' ? 'background:#111;color:#fff' : ''}">${{ high: 'High', med: 'Medium', low: 'Low' }[a.sev]} severity</span></div>
+    el.innerHTML = `<div class="card-h">${fixedLungsIcon()}<span class="tag ${a.sev === 'high' ? '' : 'gray'}" style="${a.sev === 'high' ? 'background:var(--solid);color:var(--on-solid)' : ''}">${{ high: 'High', med: 'Medium', low: 'Low' }[a.sev]} severity</span></div>
       <div class="k">${a.kind}</div><h2 style="font-size:24px;font-weight:500;margin:4px 0 6px">Patient ${p.id}</h2><p style="margin:0 0 16px;color:var(--muted);font-size:13.5px">${a.text}. Raised ${fmtAgo(a.mins)}.</p>
       <dl class="kv" style="margin-bottom:16px"><dt>Cohort</dt><dd>${p.cohort.short}</dd><dt>Adherence, 7 days</dt><dd>${pct(adh(p, 0, 7))}</dd><dt>Rescue uses, 7 days</dt><dd>${rescueSum(p, 0, 7)}</dd><dt>Inhaler</dt><dd>${DEV[p.status][0]}</dd>${a.by ? `<dt>${a.status === 'ack' ? 'Acknowledged by' : 'Assigned to'}</dt><dd>${a.by}</dd>` : ''}</dl>
       <div class="k" style="margin-bottom:6px">Last 14 days</div>${doseDots(p)}
@@ -1922,7 +1922,7 @@ PAGES['data-management'] = () => {
       )
         .map(
           ([v, n], i) =>
-            `<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span>Version ${v}${v === currentFirmware ? ' (current)' : ''}</span><b style="font-weight:600">${n}</b></div><div class="hbar"><i data-w="${(n / PATIENTS.length) * 100}" style="background:${i === 0 ? '#087BFF' : i === 1 ? '#7FB7F7' : '#111'}"></i></div></div>`,
+            `<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span>Version ${v}${v === currentFirmware ? ' (current)' : ''}</span><b style="font-weight:600">${n}</b></div><div class="hbar"><i data-w="${(n / PATIENTS.length) * 100}" style="background:${i === 0 ? '#087BFF' : i === 1 ? '#7FB7F7' : 'var(--data-ink)'}"></i></div></div>`,
         )
         .join(
           '',

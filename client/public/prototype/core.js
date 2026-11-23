@@ -56,7 +56,13 @@ const COHORTS = [
     color: '#B9DAFF',
     hatch: 'h-sky',
   },
-  { id: 'copd', name: 'COPD', short: 'COPD', color: '#111111', hatch: 'h-ink' },
+  {
+    id: 'copd',
+    name: 'COPD',
+    short: 'COPD',
+    color: 'var(--data-ink)',
+    hatch: 'h-ink',
+  },
 ];
 const DAYS = 90; // history kept per patient
 const PATIENTS = window.__ADHERIUM_BOOT__.patients;
@@ -739,7 +745,7 @@ function openCell(c, btn) {
   openDrawer(`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><div style="color:var(--muted);font-size:13px">${c.c.name}</div><h2 style="font-size:24px;font-weight:500;margin-top:4px">${dayLong(c.d)}</h2></div><button class="arrow" data-close aria-label="Close">${ic('x')}</button></div>
     <div class="big" style="margin:20px 0 4px">${(c.v * 100).toFixed(1)}<small>%</small></div><div style="color:var(--muted);font-size:13px">of ${c.n * 2} scheduled controller doses taken</div>
     <h3 style="font-size:15px;font-weight:500;margin:24px 0 10px">Patients with missed doses that day</h3>
-    ${ps.length ? `<div class="timeline-list">${ps.map((x) => `<button class="ev" data-pt="${x.p.id}" style="--c:${x.v ? '#B9DAFF' : '#111'}"><b>${x.p.id}</b><span class="t">${x.v ? '1 of 2 taken' : 'Both missed'}</span><small>${x.p.status === 'offline' ? 'Inhaler offline' : 'Inhaler connected'}</small></button>`).join('')}</div>` : '<div class="empty"><b>No missed doses</b>Every patient in this cohort took both doses.</div>'}`);
+    ${ps.length ? `<div class="timeline-list">${ps.map((x) => `<button class="ev" data-pt="${x.p.id}" style="--c:${x.v ? '#B9DAFF' : 'var(--data-ink)'}"><b>${x.p.id}</b><span class="t">${x.v ? '1 of 2 taken' : 'Both missed'}</span><small>${x.p.status === 'offline' ? 'Inhaler offline' : 'Inhaler connected'}</small></button>`).join('')}</div>` : '<div class="empty"><b>No missed doses</b>Every patient in this cohort took both doses.</div>'}`);
   $$('#drawer [data-pt]').forEach(
     (b) => (b.onclick = () => openPatient(b.dataset.pt)),
   );
@@ -869,7 +875,11 @@ function drawGauge(P, animate) {
   for (let i = 0; i < N; i++) {
     const a = Math.PI - ((i + 0.5) / N) * Math.PI;
     const col =
-      i < onSeg ? '#087BFF' : i < onSeg + fuSeg ? '#B9DAFF' : '#E6E6E6';
+      i < onSeg
+        ? '#087BFF'
+        : i < onSeg + fuSeg
+          ? '#B9DAFF'
+          : 'var(--gauge-off)';
     const x = cx + (Math.cos(a) * (r1 + r2)) / 2,
       y = cy - (Math.sin(a) * (r1 + r2)) / 2,
       deg = (-a * 180) / Math.PI + 90;
@@ -877,7 +887,7 @@ function drawGauge(P, animate) {
   }
   $('#gauge').innerHTML = svg;
   $('#g-leg').innerHTML =
-    `<span><i style="background:#087BFF"></i>On track ${on}</span><span><i style="background:#B9DAFF"></i>Follow-up ${fu}</span><span><i style="background:#E6E6E6"></i>Offline ${off}</span>`;
+    `<span><i style="background:#087BFF"></i>On track ${on}</span><span><i style="background:#B9DAFF"></i>Follow-up ${fu}</span><span><i style="background:var(--gauge-off)"></i>Offline ${off}</span>`;
   const gv = $('#g-val');
   if (animate && !RM) {
     const o = { v: 0 };
@@ -913,7 +923,7 @@ function activityEvents() {
         alert.sev === 'high'
           ? '#D93B3B'
           : alert.sev === 'low'
-            ? '#111'
+            ? 'var(--data-ink)'
             : '#C77A00',
       title: alert.p.id + ': ' + alert.kind,
       sub: alert.text,
