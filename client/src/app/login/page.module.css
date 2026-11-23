@@ -19,6 +19,17 @@
   width: 100%;
 }
 
+.panelLeaving {
+  animation: leaveLogin 0.18s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+}
+
+@keyframes leaveLogin {
+  to {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
 .formPanel {
   display: flex;
   flex-direction: column;
@@ -331,6 +342,18 @@
 
 .submit:hover .submitIcon {
   transform: rotate(45deg);
+}
+
+.submitBusy .submitLabel {
+  animation: submitLabelSpin 0.7s linear infinite;
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes submitLabelSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .submit:disabled {
@@ -652,6 +675,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .panelLeaving {
+    animation-duration: 0.001ms;
+  }
+
   .input,
   .submitLabel,
   .submitIcon {

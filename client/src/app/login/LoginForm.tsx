@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, type AnimationEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import styles from './page.module.css';
@@ -33,6 +33,7 @@ export default function LoginForm({
       : '',
   );
   const [busy, setBusy] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
   const [activeRole, setActiveRole] = useState<LoginRole>('provider');
   const [view, setView] = useState<'signin' | 'forgot'>('signin');
   const [forgotEmail, setForgotEmail] = useState('');
@@ -49,7 +50,8 @@ export default function LoginForm({
         method: 'POST',
         body: { email, password },
       });
-      router.replace('/overview');
+      await new Promise((resolve) => window.setTimeout(resolve, 2000));
+      setTransitioning(true);
     } catch (error) {
       setMessage(
         error instanceof Error
@@ -57,6 +59,12 @@ export default function LoginForm({
           : 'Sign in could not be completed. Try again.',
       );
       setBusy(false);
+    }
+  }
+
+  function finishSignInTransition(event: AnimationEvent<HTMLElement>) {
+    if (transitioning && event.target === event.currentTarget) {
+      router.replace('/overview');
     }
   }
 
@@ -92,7 +100,11 @@ export default function LoginForm({
 
   return (
     <main className={styles.page}>
-      <section className={styles.panel} aria-label="Adherium sign in">
+      <section
+        className={`${styles.panel} ${transitioning ? styles.panelLeaving : ''}`}
+        aria-label="Adherium sign in"
+        onAnimationEnd={finishSignInTransition}
+      >
         <div className={styles.formPanel}>
           <div className={styles.brand}>
             <svg viewBox="0 0 32 32" aria-hidden="true">
@@ -212,9 +224,9 @@ export default function LoginForm({
                     </button>
                   </div>
                   <button
-                    className={styles.submit}
+                    className={`${styles.submit} ${busy || transitioning ? styles.submitBusy : ''}`}
                     type="submit"
-                    disabled={busy}
+                    disabled={busy || transitioning}
                   >
                     <span className={styles.submitLabel}>
                       {busy ? 'Signing in…' : 'Sign in'}
