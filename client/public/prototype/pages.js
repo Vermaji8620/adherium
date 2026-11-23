@@ -1676,7 +1676,7 @@ PAGES.reports = () => {
     )
       .map(
         ([k, [t, d, c]]) =>
-          `<button class="tpl ${c} c3" data-t="${k}" style="grid-column:span 3"><span style="display:flex;justify-content:space-between;width:100%"><span class="wcirc ${c ? '' : 'g'}" style="${c ? '' : 'background:var(--bg);color:var(--text)'}">${ic('doc')}</span><span class="wcirc" style="${c ? '' : 'background:var(--ink);color:#fff'}">${ic('arrow')}</span></span><h3>${t}</h3><small>${d}</small></button>`,
+          `<button class="tpl ${c} c3" data-t="${k}" style="grid-column:span 3"><span style="display:flex;justify-content:space-between;width:100%"><span class="wcirc ${c ? '' : 'g'}" style="${c ? '' : 'background:var(--bg);color:var(--text)'}">${ic('doc')}</span><span class="wcirc ${c ? '' : 'tpl-arrow'}">${ic('arrow')}</span></span><h3>${t}</h3><small>${d}</small></button>`,
       )
       .join('')}</div>
     <div class="split rev"><section class="card"><div class="card-h"><h2>Saved reports</h2><span class="k">${DB.reports.length}</span></div><div class="timeline-list" id="rp-list"></div></section><section class="card" id="rp-doc"></section></div>`;
@@ -1909,7 +1909,7 @@ PAGES['data-management'] = () => {
           const label = item.simulated
             ? `${item.status} (simulated)`
             : item.status;
-          return `<div class="q" style="cursor:default"><span class="node" style="width:40px;height:40px;${active ? 'background:#E4F0FF;color:#087BFF' : ''}">${ic(active ? 'pulse' : 'db')}</span><span style="flex:1"><b>${item.name}</b><br><small class="k">${item.details || ''}</small></span><span class="st" style="--c:${active ? '#087BFF' : '#D0D0D0'}">${label}</span></div>`;
+          return `<div class="q" style="cursor:default"><span class="node" style="width:40px;height:40px;${active ? 'background:var(--tag-blue-bg);color:var(--tag-blue)' : ''}">${ic(active ? 'pulse' : 'db')}</span><span style="flex:1"><b>${item.name}</b><br><small class="k">${item.details || ''}</small></span><span class="st" style="--c:${active ? '#087BFF' : '#D0D0D0'}">${label}</span></div>`;
         })
         .join('')}</section>
       <section class="card c4"><div class="card-h"><h2>Sensor firmware</h2></div>${Object.entries(
