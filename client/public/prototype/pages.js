@@ -204,8 +204,8 @@ PAGES.patients = () => {
         .join('')}</div>
       <select class="sel" id="pm-coh" aria-label="Cohort"><option value="all">All cohorts</option><option value="asthma" ${PM.coh === 'asthma' ? 'selected' : ''}>Asthma</option><option value="copd" ${PM.coh === 'copd' ? 'selected' : ''}>COPD</option></select>
       <select class="sel" id="pm-sort" aria-label="Sort"><option value="risk">Sort by need</option><option value="adh" ${PM.sort === 'adh' ? 'selected' : ''}>Lowest adherence</option><option value="rescue" ${PM.sort === 'rescue' ? 'selected' : ''}>Most rescue use</option><option value="id" ${PM.sort === 'id' ? 'selected' : ''}>Patient ID</option></select></div>
-    <div class="pm-layout"><aside class="card dark pm-followup" id="pm-side"></aside>
-    <section class="card pm-table-card"><div class="rt-wrap"><table class="rt pm-table"><thead><tr><th>Patient</th><th>Cohort</th><th>Last 14 days</th><th class="r">Adherence</th><th class="r">Rescue, 7d</th><th>Inhaler</th><th>Status</th></tr></thead><tbody id="pm-body"></tbody></table></div><div id="pm-more"></div></section></div>`;
+    <div class="split" id="pm-split"><section class="card pm-table-card"><div class="rt-wrap"><table class="rt pm-table"><thead><tr><th>Patient</th><th>Cohort</th><th>Last 14 days</th><th class="r">Adherence</th><th class="r">Rescue, 7d</th><th>Inhaler</th><th>Status</th></tr></thead><tbody id="pm-body"></tbody></table></div><div id="pm-more"></div></section>
+    <aside class="card dark pm-followup" id="pm-side"></aside></div>`;
   function rows() {
     let r = base.filter(
       (p) =>
@@ -266,10 +266,10 @@ PAGES.patients = () => {
       });
     const fu = base.filter((p) => statusOf(p) === 'fu');
     $('#pm-side').innerHTML =
-      `<div class="pm-fu-a"><div><h2>Follow-up <b>today</b></h2><p style="color:#BDBDBD;font-size:13px;margin:6px 0 16px">${fu.length} ${fu.length === 1 ? 'patient is' : 'patients are'} below the 80% adherence target or using rescue inhalers more than usual.</p></div>
+      `<div class="pm-fu-a"><h2>Follow-up <b>today</b></h2><p style="color:#BDBDBD;font-size:13px;margin:6px 0 16px">${fu.length} ${fu.length === 1 ? 'patient is' : 'patients are'} below the 80% adherence target or using rescue inhalers more than usual.</p>
       <div class="pm-fu-stat" style="display:flex;align-items:center;gap:16px;margin-bottom:16px">${ringSVG(counts.on / counts.all, 96, 10, '#087BFF', 'Share on track')}<div><div class="big" style="color:#fff">${Math.round((counts.on / counts.all) * 100)}<small style="color:#BDBDBD">%</small></div><small style="color:#BDBDBD">on track</small></div></div>
-      <button class="btn-blue" id="pm-al" style="margin-top:12px"><span>Open alerts</span><i>${ic('arrow')}</i></button></div>
-      <div class="timeline-list pm-fu-b">${fu
+      <button class="btn-blue" id="pm-al"><span>Open alerts</span><i>${ic('arrow')}</i></button></div>
+      <div class="pm-fu-b">${fu
         .slice(0, 5)
         .map(
           (p) =>
