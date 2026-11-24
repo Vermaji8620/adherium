@@ -1392,6 +1392,9 @@ svg.lc text {
 .drawer.open {
   transform: none;
 }
+#drawer .timeline-list::before {
+  display: none;
+}
 .scrim {
   position: fixed;
   inset: 0;
