@@ -224,12 +224,20 @@ export default function LoginForm({
                     </button>
                   </div>
                   <button
-                    className={`${styles.submit} ${busy || transitioning ? styles.submitBusy : ''}`}
+                    className={`${styles.submit} ${styles.signInSubmit} ${busy || transitioning ? styles.submitBusy : ''}`}
                     type="submit"
                     disabled={busy || transitioning}
+                    aria-busy={busy || transitioning}
                   >
                     <span className={styles.submitLabel}>
-                      {busy ? 'Signing in…' : 'Sign in'}
+                      {busy || transitioning ? (
+                        <span
+                          className={styles.submitSpinner}
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        'Sign in'
+                      )}
                     </span>
                     <i className={styles.submitIcon} aria-hidden="true">
                       <svg

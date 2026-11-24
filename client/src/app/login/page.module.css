@@ -344,13 +344,35 @@
   transform: rotate(45deg);
 }
 
+.signInSubmit .submitLabel,
+.signInSubmit .submitIcon {
+  transition: background 0.2s;
+}
+
+.signInSubmit:hover .submitIcon {
+  transform: none;
+}
+
 .submitBusy .submitLabel {
-  animation: submitLabelSpin 0.7s linear infinite;
   position: relative;
   z-index: 2;
 }
 
-@keyframes submitLabelSpin {
+.submitSpinner {
+  animation: loginSpinner 0.8s linear infinite;
+  border: 2px solid rgb(255 255 255 / 45%);
+  border-radius: 50%;
+  border-top-color: #fff;
+  height: 16px;
+  left: 50%;
+  margin: -8px 0 0 -8px;
+  position: absolute;
+  top: 50%;
+  transform-origin: center;
+  width: 16px;
+}
+
+@keyframes loginSpinner {
   to {
     transform: rotate(360deg);
   }
