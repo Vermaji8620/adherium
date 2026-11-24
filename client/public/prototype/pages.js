@@ -1033,7 +1033,7 @@ PAGES['respiratory-analytics'] = () => {
       a1 = ((h + 1) / 24) * 2 * Math.PI - Math.PI / 2 - 0.02;
     const rr = r0 + (v / mx) * (r1 - r0);
     const p = (a, r) => `${cx + Math.cos(a) * r},${cy + Math.sin(a) * r}`;
-    s += `<path class="cb" data-h="${h}" d="M${p(a0, r0)} L${p(a0, rr)} A${rr},${rr} 0 0 1 ${p(a1, rr)} L${p(a1, r0)} A${r0},${r0} 0 0 0 ${p(a0, r0)}Z" fill="${h < 6 ? 'var(--data-ink)' : '#087BFF'}" opacity="${0.35 + (v / mx) * 0.65}"/>`;
+    s += `<path class="cb${h < 6 ? ' ink-mark' : ''}" data-h="${h}" d="M${p(a0, r0)} L${p(a0, rr)} A${rr},${rr} 0 0 1 ${p(a1, rr)} L${p(a1, r0)} A${r0},${r0} 0 0 0 ${p(a0, r0)}Z" fill="${h < 6 ? 'var(--data-ink)' : '#087BFF'}" opacity="${0.35 + (v / mx) * 0.65}"/>`;
   });
   [0, 6, 12, 18].forEach((h) => {
     const a = (h / 24) * 2 * Math.PI - Math.PI / 2;
@@ -1077,7 +1077,7 @@ PAGES['respiratory-analytics'] = () => {
   g += pts
     .map(
       (d, i) =>
-        `<circle class="spt" data-i="${i}" cx="${X(clamp(d.x, 0.3, 1))}" cy="${Y(d.y)}" r="5" fill="${d.p.cohort.id === 'asthma-p' ? '#7FB7F7' : d.p.cohort.color}" fill-opacity=".8" style="cursor:pointer"/>`,
+        `<circle class="spt${d.p.cohort.id === 'copd' ? ' copd-point' : ''}" data-i="${i}" cx="${X(clamp(d.x, 0.3, 1))}" cy="${Y(d.y)}" r="5" fill="${d.p.cohort.id === 'asthma-p' ? '#7FB7F7' : d.p.cohort.color}" fill-opacity=".8" style="cursor:pointer"/>`,
     )
     .join('');
   sc.innerHTML = g;
@@ -1128,11 +1128,11 @@ PAGES['respiratory-analytics'] = () => {
     )
     .join('');
   series.forEach((se) => {
-    t += `<path class="trl" d="${se.v.map((v, i) => (i ? 'L' : 'M') + tx(i) + ',' + ty(v)).join(' ')}" fill="none" stroke="${se.c.id === 'asthma-p' ? '#7FB7F7' : se.c.color}" stroke-width="2.4" vector-effect="non-scaling-stroke"/>`;
+    t += `<path class="trl${se.c.id === 'copd' ? ' copd-series' : ''}" d="${se.v.map((v, i) => (i ? 'L' : 'M') + tx(i) + ',' + ty(v)).join(' ')}" fill="none" stroke="${se.c.id === 'asthma-p' ? '#7FB7F7' : se.c.color}" stroke-width="2.4" vector-effect="non-scaling-stroke"/>`;
     t += se.v
       .map(
         (v, i) =>
-          `<circle class="trd" cx="${tx(i)}" cy="${ty(v)}" r="3.5" fill="var(--card)" stroke="${se.c.id === 'asthma-p' ? '#7FB7F7' : se.c.color}" stroke-width="2" vector-effect="non-scaling-stroke"><title>${se.c.short}, ${11 - i} ${11 - i === 1 ? 'week' : 'weeks'} ago: ${v.toFixed(2)}</title></circle>`,
+          `<circle class="trd${se.c.id === 'copd' ? ' copd-series' : ''}" cx="${tx(i)}" cy="${ty(v)}" r="3.5" fill="var(--card)" stroke="${se.c.id === 'asthma-p' ? '#7FB7F7' : se.c.color}" stroke-width="2" vector-effect="non-scaling-stroke"><title>${se.c.short}, ${11 - i} ${11 - i === 1 ? 'week' : 'weeks'} ago: ${v.toFixed(2)}</title></circle>`,
       )
       .join('');
   });

@@ -179,6 +179,14 @@ h3 {
 .h-off {
   background: var(--off);
 }
+:root[data-theme='dark'] #ra-clock .cb.ink-mark,
+:root[data-theme='dark'] #ra-sc .spt.copd-point {
+  fill: #6e6e6e;
+}
+:root[data-theme='dark'] #ra-tr .trl.copd-series,
+:root[data-theme='dark'] #ra-tr .trd.copd-series {
+  stroke: #6e6e6e;
+}
 
 /* shell */
 .frame {
