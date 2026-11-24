@@ -1671,15 +1671,13 @@ PAGES.reports = () => {
   w.innerHTML =
     head('Reports & Insights', 'Reports', '') +
     `
-    <div class="grid report-templates" role="region" aria-label="Report templates" style="margin-bottom:16px">${Object.entries(
-      TPL,
-    )
+    <div class="grid" style="margin-bottom:16px">${Object.entries(TPL)
       .map(
         ([k, [t, d, c]]) =>
-          `<button class="tpl ${c} c3" data-t="${k}" style="grid-column:span 3"><span style="display:flex;justify-content:space-between;width:100%"><span class="wcirc ${c ? '' : 'g'}" style="${c ? '' : 'background:var(--bg);color:var(--text)'}">${ic('doc')}</span><span class="wcirc ${c ? '' : 'tpl-arrow'}">${ic('arrow')}</span></span><h3>${t}</h3><small>${d}</small></button>`,
+          `<button class="tpl ${c} c3" data-t="${k}" style="grid-column:span 3"><span style="display:flex;justify-content:space-between;width:100%"><span class="wcirc ${c ? '' : 'g'}" style="${c ? '' : 'background:var(--bg);color:var(--text)'}">${ic('doc')}</span><span class="wcirc" style="${c ? '' : 'background:var(--solid);color:var(--on-solid)'}">${ic('arrow')}</span></span><h3>${t}</h3><small>${d}</small></button>`,
       )
       .join('')}</div>
-    <div class="split rev"><section class="card"><div class="card-h"><h2>Saved reports</h2><span class="k">${DB.reports.length}</span></div><div class="timeline-list" id="rp-list"></div></section><section class="card" id="rp-doc"></section></div>`;
+    <div class="split rev"><section class="card"><div class="card-h"><h2>Saved reports</h2><span class="k">${DB.reports.length}</span></div><div id="rp-list"></div></section><section class="card" id="rp-doc"></section></div>`;
   function list() {
     $('#rp-list').innerHTML = DB.reports
       .map(
@@ -1761,7 +1759,7 @@ PAGES.reports = () => {
       )
         .map(([c, l]) => `<span><i class="${c}"></i>${l}</span>`)
         .join('')}</div>
-      <div class="rt-wrap"><table class="rt report-table"><thead><tr><th>Patient</th><th>Cohort</th><th class="r">Adherence</th><th class="r">Rescue</th><th>Inhaler</th></tr></thead><tbody>${s.P.slice()
+      <div class="rt-wrap"><table class="rt"><thead><tr><th>Patient</th><th>Cohort</th><th class="r">Adherence</th><th class="r">Rescue</th><th>Inhaler</th></tr></thead><tbody>${s.P.slice()
         .sort((a, b) => adh(a, 0, r.range) - adh(b, 0, r.range))
         .slice(0, 6)
         .map(
