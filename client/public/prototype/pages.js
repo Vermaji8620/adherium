@@ -1920,10 +1920,10 @@ PAGES['data-management'] = () => {
         .join(
           '',
         )}<button class="btn" id="dm-fw" style="margin-top:4px">Schedule update for older sensors</button></section>
-      <section class="card c4"><div class="card-h"><h2>Import enrollment</h2></div><label class="drop" id="dm-drop"><input type="file" accept=".csv,text/csv" id="dm-file" hidden><b>Drop a CSV or browse</b>Columns: patient_id, cohort. Validated by the local API; enrollment is not performed</label>
+      <section class="card c4"><div class="card-h"><h2>Import enrollment</h2></div><label class="drop" id="dm-drop"><input type="file" accept=".csv,text/csv" id="dm-file" hidden><b>Drop a CSV or browse</b>Columns: patient_id, cohort. Checked in your browser only</label>
         <button class="btn" id="dm-sample" style="margin-top:10px;width:100%">Use a sample file with errors</button><div id="dm-res" style="margin-top:10px"></div></section>
       <section class="card c6"><div class="card-h"><h2>Import history</h2></div><div class="rt-wrap"><table class="rt import-history-table"><thead><tr><th>Import</th><th class="r">Rows</th><th>Status</th><th>Date</th></tr></thead><tbody id="dm-imp"></tbody></table></div></section>
-      <section class="card c6"><div class="card-h"><h2>Audit log</h2><span class="k">Actions recorded by the local API</span></div><div class="timeline-list" id="dm-audit"></div></section>
+      <section class="card c6"><div class="card-h"><h2>Audit log</h2><span class="k">Actions taken in this browser</span></div><div id="dm-audit"></div></section>
     </div>`;
   const imp = () => {
     $('#dm-imp').innerHTML = DB.imports
@@ -1942,62 +1942,232 @@ PAGES['data-management'] = () => {
               `<div class="ev" style="--c:#087BFF;cursor:default"><b>${a.msg}</b><span class="t">${fmtRel(a.at)}</span><small>${a.role}</small></div>`,
           )
           .join('')
-      : '<div class="empty"><b>No actions yet</b>Actions recorded by the local API appear here.</div>';
+      : '<div class="empty"><b>No actions yet</b>Acknowledge an alert, save a note or generate a report and it will be logged here.</div>';
   };
   window.__ADHERIUM_RENDER_AUDIT__ = aud;
+  function parseCsvRow(line) {
+    const cells = [];
+    let cell = '';
+    let quoted = false;
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        if (quoted && line[i + 1] === '"') {
+          cell += '"';
+          i++;
+        } else quoted = !quoted;
+      } else if (char === ',' && !quoted) {
+        cells.push(cell.trim());
+        cell = '';
+      } else cell += char;
+    }
+    if (quoted) throw new Error('The CSV contains an unclosed quoted field.');
+    cells.push(cell.trim());
+    return cells;
+  }
+  function validateEnrollmentCsv(text) {
+    if (typeof text !== 'string' || !text.trim())
+      return {
+        rows: 0,
+        validRows: 0,
+        issues: ['The file is empty. Add a header and at least one row.'],
+        status: 'Failed',
+        failure: true,
+      };
+
+    const lines = text
+      .replace(/^\uFEFF/, '')
+      .replace(/\r\n?/g, '\n')
+      .split('\n')
+      .filter((line) => line.trim());
+    const headers = parseCsvRow(lines.shift() || '').map((header) =>
+      header.toLowerCase(),
+    );
+    const patientIdColumn = headers.indexOf('patient_id');
+    const cohortColumn = headers.indexOf('cohort');
+    if (patientIdColumn < 0 || cohortColumn < 0)
+      return {
+        rows: 0,
+        validRows: 0,
+        issues: ['Missing column. The file needs patient_id and cohort.'],
+        status: 'Failed',
+        failure: true,
+      };
+
+    const rows = lines.map(parseCsvRow);
+    if (!rows.length)
+      return {
+        rows: 0,
+        validRows: 0,
+        issues: ['No data rows found beneath the header.'],
+        status: 'Failed',
+        failure: true,
+      };
+
+    const seen = new Set();
+    const issues = [];
+    let validRows = 0;
+    let invalidIds = 0;
+    let duplicates = 0;
+    let invalidCohorts = 0;
+    rows.forEach((cells, index) => {
+      const rowNumber = index + 2;
+      const id = (cells[patientIdColumn] || '').trim().toUpperCase();
+      const cohort = (cells[cohortColumn] || '').trim();
+      let rowHasIssue = false;
+      if (!/^PT-\d{3,}$/.test(id)) {
+        invalidIds++;
+        rowHasIssue = true;
+        issues.push(`Row ${rowNumber}: patient ID must use the PT-000 format.`);
+      } else if (seen.has(id)) {
+        duplicates++;
+        rowHasIssue = true;
+        issues.push(`Row ${rowNumber}: duplicate patient ID ${id}.`);
+      }
+      if (id) seen.add(id);
+      if (!/^(asthma|copd)/i.test(cohort)) {
+        invalidCohorts++;
+        rowHasIssue = true;
+        issues.push(`Row ${rowNumber}: cohort must be asthma or COPD.`);
+      }
+      if (!rowHasIssue) validRows++;
+    });
+    return {
+      rows: rows.length,
+      validRows,
+      invalidIds,
+      duplicates,
+      invalidCohorts,
+      issues,
+      status: issues.length ? 'Completed with warnings' : 'Completed',
+      failure: false,
+    };
+  }
+  let importInProgress = false;
   function validate(name, text) {
+    if (importInProgress) return;
+    importInProgress = true;
     const res = $('#dm-res');
+    const file = $('#dm-file');
+    const sample = $('#dm-sample');
+    if (!res) {
+      importInProgress = false;
+      return;
+    }
+    if (file) file.disabled = true;
+    if (sample) sample.disabled = true;
+    let result;
+    try {
+      result = validateEnrollmentCsv(text);
+    } catch (error) {
+      result = {
+        rows: 0,
+        validRows: 0,
+        issues: [
+          error instanceof Error
+            ? error.message
+            : 'Could not read the CSV file.',
+        ],
+        status: 'Failed',
+        failure: true,
+      };
+    }
     res.innerHTML =
-      '<div class="progress" style="background:var(--bg)"><i style="width:25%"></i></div><div class="log" id="dm-log" style="margin-top:8px">Sending CSV to the local API for validation…</div>';
-    window
-      .__ADHERIUM_API__('/data/imports/validate', {
-        method: 'POST',
-        body: { name, csv: text },
-      })
-      .then(({ item, validRows, issues }) => {
-        DB.imports.unshift({
-          id: item.externalId,
-          name: item.name,
-          rows: item.rows,
-          status: item.status,
-          at: item.createdAt,
-        });
-        $('#dm-log').textContent =
-          'Read ' +
-          item.rows +
-          ' rows. ' +
-          validRows +
-          ' valid rows. ' +
-          issues.length +
-          ' validation issues.';
-        if (issues.length) {
-          const detail = document.createElement('div');
-          detail.className = 'warn';
-          detail.textContent = issues
-            .map((issue) => issue.message || issue.code)
-            .join('; ');
-          $('#dm-log').appendChild(detail);
+      '<div class="progress" style="background:var(--bg)"><i></i></div><div class="log" id="dm-log" style="margin-top:8px" role="status" aria-live="polite">Checking CSV in this browser…</div>';
+    const progress = $('.progress i', res);
+    progress.style.transition = RM ? 'none' : 'width 650ms ease';
+    requestAnimationFrame(() => (progress.style.width = '100%'));
+    window.setTimeout(
+      () => {
+        importInProgress = false;
+        if (!res.isConnected) return;
+        if (file) file.disabled = false;
+        if (sample) sample.disabled = false;
+        const log = $('#dm-log', res);
+        progress.style.animation = 'none';
+        log.replaceChildren();
+        const addLine = (message, className = '') => {
+          const line = document.createElement('div');
+          line.className = className;
+          line.textContent = message;
+          log.appendChild(line);
+        };
+        if (result.failure) {
+          addLine(result.issues[0], 'err');
+        } else {
+          addLine(`Read ${result.rows} rows`);
+          addLine(
+            `${result.validRows} rows valid`,
+            result.issues.length ? 'warn' : 'ok',
+          );
+          if (result.invalidIds)
+            addLine(
+              `${result.invalidIds} patient IDs are not in the PT-000 format`,
+              'err',
+            );
+          if (result.duplicates)
+            addLine(`${result.duplicates} duplicate patient IDs`, 'warn');
+          if (result.invalidCohorts)
+            addLine(
+              `${result.invalidCohorts} rows have a cohort other than asthma or COPD`,
+              'warn',
+            );
+          result.issues.forEach((issue) => addLine(issue, 'warn'));
         }
+        const now = new Date().toISOString();
+        DB.imports.unshift({
+          id: `IM-local-${Date.now()}`,
+          name,
+          rows: result.rows,
+          status: result.status,
+          at: now,
+        });
+        DB.audit.unshift({
+          msg: `${result.failure ? 'Import failed' : 'Validated import'}: ${name}`,
+          role: ROLES[ST.role][0],
+          at: now,
+        });
+        DB.audit = DB.audit.slice(0, 60);
         imp();
-        audit();
-        toast('Import validation recorded: ' + item.status);
-      })
-      .catch((error) => {
-        $('#dm-log').textContent = error.message;
-        $('#dm-log').classList.add('err');
-        window.__ADHERIUM_SHOW_ERROR__?.(error);
-      });
+        aud();
+        toast(`Import check finished: ${result.status.toLowerCase()}`);
+      },
+      RM ? 0 : 650,
+    );
   }
   const drop = $('#dm-drop'),
     file = $('#dm-file');
+  const showImportError = (message) => {
+    const res = $('#dm-res');
+    res.innerHTML =
+      '<div class="log" role="alert" aria-live="assertive"></div>';
+    const line = document.createElement('div');
+    line.className = 'err';
+    line.textContent = message;
+    $('.log', res).appendChild(line);
+    toast(message);
+  };
   const read = (f) => {
     if (!f) return;
+    if (importInProgress) return;
     if (!/\.csv$/i.test(f.name)) {
-      toast('Choose a .csv file');
+      showImportError('Choose a .csv file.');
+      return;
+    }
+    if (f.size > 1000000) {
+      showImportError('The CSV is too large. Choose a file under 1 MB.');
       return;
     }
     const r = new FileReader();
-    r.onload = () => validate(f.name.replace(/\.csv$/i, ''), r.result);
+    r.onload = () => {
+      if (typeof r.result !== 'string') {
+        showImportError('The CSV could not be read as text.');
+        return;
+      }
+      validate(f.name.replace(/\.csv$/i, ''), r.result);
+    };
+    r.onerror = () => showImportError('The CSV file could not be read.');
+    r.onabort = () => showImportError('CSV reading was cancelled.');
     r.readAsText(f);
   };
   drop.ondragover = (e) => {
@@ -2010,7 +2180,10 @@ PAGES['data-management'] = () => {
     drop.classList.remove('over');
     read(e.dataTransfer.files[0]);
   };
-  file.onchange = () => read(file.files[0]);
+  file.onchange = () => {
+    read(file.files[0]);
+    file.value = '';
+  };
   $('#dm-sample').onclick = () =>
     validate(
       'Sample enrollment file',

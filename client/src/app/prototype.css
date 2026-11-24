@@ -1142,6 +1142,13 @@ h3 {
   margin-top: -6px;
   transform: none;
 }
+#dm-audit .ev::before {
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  margin-top: -6px;
+  transform: none;
+}
 .tl .ev {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
@@ -2640,6 +2647,22 @@ textarea.inp {
   transition:
     border-color 0.2s,
     background 0.2s;
+}
+#dm-drop {
+  display: block;
+  width: auto;
+  min-height: 0;
+  border: 1.5px dashed var(--hover-line);
+  border-radius: 22px;
+  padding: 22px;
+  text-align: center;
+}
+#dm-drop:hover {
+  border-color: var(--blue);
+}
+#dm-drop.over {
+  border-color: var(--blue);
+  background: var(--drop-over);
 }
 .drop.over {
   border-color: var(--blue);
