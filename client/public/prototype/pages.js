@@ -2095,7 +2095,7 @@ PAGES['data-management'] = () => {
         if (result.failure) {
           addLine(result.issues[0], 'err');
         } else {
-          addLine(`Read ${result.rows} rows`);
+          addLine(`Read ${result.rows} rows`, 'ok');
           addLine(
             `${result.validRows} rows valid`,
             result.issues.length ? 'warn' : 'ok',
