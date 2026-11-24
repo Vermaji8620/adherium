@@ -1062,12 +1062,13 @@ h3 {
 }
 
 /* activity timeline */
-.tl,
+.tl {
+  position: relative;
+}
 .timeline-list {
   position: relative;
   padding-left: 22px;
 }
-.tl::before,
 .timeline-list::before {
   content: '';
   position: absolute;
@@ -1114,17 +1115,39 @@ h3 {
   background: var(--card);
   border: 2px solid var(--c, #111);
 }
-.tl .ev,
 .timeline-list .ev {
   padding-left: 12px;
 }
-.tl .ev::before,
 .timeline-list .ev::before {
   left: -21px;
+}
+.tl .ev {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  padding-left: 38px;
+  color: inherit;
+}
+.tl .ev::before {
+  left: 12px;
+}
+.tl .ev + .ev::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  left: 17.25px;
+  bottom: 50%;
+  height: 100%;
+  width: 1.5px;
+  background: var(--line);
+}
+.dark .tl .ev + .ev::after {
+  background: #333;
 }
 .ev b {
   font-weight: 500;
   font-size: 13.5px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 .ev small {
   color: var(--muted);

@@ -956,11 +956,10 @@ function drawActivity(animate) {
   if (animate && !RM)
     safeFrom($$('.ev', el), {
       x: -8,
-      opacity: 0,
       duration: 0.35,
       stagger: 0.04,
       ease: 'power2.out',
-      clearProps: 'all',
+      clearProps: 'transform',
     });
 }
 
