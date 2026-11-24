@@ -1901,7 +1901,7 @@ PAGES['data-management'] = () => {
         .join('')}</div>
       <div class="pipe-l"><span>Inhaler sensor</span><span>Phone app</span><span>Cloud ingestion</span><span>Care dashboard</span></div></section>
     <div class="grid">
-      <section class="card c4"><div class="card-h"><h2>Connections</h2></div>${window.__ADHERIUM_BOOT__.integrations
+      <section class="card c4 dm-connections"><div class="card-h"><h2>Connections</h2></div>${window.__ADHERIUM_BOOT__.integrations
         .map((item) => {
           const active = /connected|active|ready/i.test(item.status || '');
           const label = item.simulated
