@@ -2515,6 +2515,24 @@ textarea.inp {
   border-radius: 24px;
   padding: 18px;
 }
+.role-avatar {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--sky);
+  color: #0458ba;
+  font-weight: 600;
+}
+.role-avatar-primary {
+  background: #087bff;
+  color: #fff;
+}
+:root[data-theme='dark'] .role-avatar:not(.role-avatar-primary) {
+  background: #b9daff;
+  color: #0458ba;
+}
 .role-col h3 {
   font-size: 16px;
   font-weight: 500;

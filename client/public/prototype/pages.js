@@ -1495,7 +1495,7 @@ PAGES['care-team'] = () => {
       .map((r, i) => {
         const mine = A.filter((a) => a.status === 'assigned' && a.by === r[0]);
         const notes = DB.notes.filter((n) => n.role === r[0]);
-        return `<section class="role-col c4 ${i === 0 ? '' : ''}" style="${i === 1 ? 'background:var(--ink);color:#fff' : ''}"><div style="display:flex;justify-content:space-between;align-items:center"><span class="av" style="width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:600;background:${i === 1 ? '#087BFF' : 'var(--sky)'};color:${i === 1 ? '#fff' : '#0458BA'}">${r[1]}</span><span class="k" style="${i === 1 ? 'color:#9A9A9A' : ''}">${notes.length} ${notes.length === 1 ? 'note' : 'notes'}</span></div><h3 style="margin-top:14px">${r[0]}</h3><div class="k" style="${i === 1 ? 'color:#9A9A9A' : ''}">${mine.length} assigned ${mine.length === 1 ? 'follow-up' : 'follow-ups'}</div>
+        return `<section class="role-col c4 ${i === 0 ? '' : ''}" style="${i === 1 ? 'background:var(--ink);color:#fff' : ''}"><div style="display:flex;justify-content:space-between;align-items:center"><span class="role-avatar ${i === 1 ? 'role-avatar-primary' : ''}">${r[1]}</span><span class="k" style="${i === 1 ? 'color:#9A9A9A' : ''}">${notes.length} ${notes.length === 1 ? 'note' : 'notes'}</span></div><h3 style="margin-top:14px">${r[0]}</h3><div class="k" style="${i === 1 ? 'color:#9A9A9A' : ''}">${mine.length} assigned ${mine.length === 1 ? 'follow-up' : 'follow-ups'}</div>
       <div style="margin-top:10px">${
         mine
           .slice(0, 4)
