@@ -1491,6 +1491,95 @@ svg.lc text {
   max-width: 52ch;
   margin: 0 auto 20px;
 }
+.loading-state {
+  display: grid;
+  gap: 14px;
+  margin: 20px;
+}
+.loading-label {
+  margin: 0 0 2px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.loading-cards,
+.loading-main {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 14px;
+}
+.loading-card {
+  min-width: 0;
+  padding: 18px;
+  border-radius: 24px;
+  background: var(--card);
+}
+.loading-cards .loading-card {
+  grid-column: span 4;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-height: 116px;
+}
+.loading-line {
+  height: 10px;
+  border-radius: 99px;
+}
+.loading-line.short {
+  width: 38%;
+}
+.loading-line.medium {
+  width: 55%;
+  margin-bottom: 12px;
+}
+.loading-line.value {
+  width: 66%;
+  height: 22px;
+}
+.loading-chart {
+  grid-column: span 8;
+  min-height: 250px;
+}
+.loading-chart-shape {
+  height: 160px;
+  border-radius: 12px;
+  clip-path: polygon(
+    0 78%,
+    14% 64%,
+    27% 70%,
+    41% 38%,
+    55% 52%,
+    68% 25%,
+    82% 41%,
+    100% 12%,
+    100% 100%,
+    0 100%
+  );
+}
+.loading-side {
+  grid-column: span 4;
+  display: grid;
+  align-content: start;
+  gap: 13px;
+  min-height: 250px;
+}
+.loading-table {
+  display: grid;
+  gap: 14px;
+}
+.loading-table-head,
+.loading-table-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 0.8fr;
+  gap: 14px;
+  align-items: center;
+}
+.loading-table-head {
+  height: 1px;
+  background: var(--line);
+}
+.loading-table-row .loading-line {
+  width: 78%;
+}
 .skel {
   position: relative;
   overflow: hidden;
@@ -1535,6 +1624,35 @@ svg.lc text {
   }
   .trend {
     grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 620px) {
+  .loading-state {
+    margin: 12px;
+    gap: 10px;
+  }
+  .loading-cards,
+  .loading-main {
+    gap: 10px;
+  }
+  .loading-cards .loading-card,
+  .loading-chart,
+  .loading-side {
+    grid-column: span 12;
+  }
+  .loading-chart,
+  .loading-side {
+    min-height: 190px;
+  }
+  .loading-chart-shape {
+    height: 110px;
+  }
+  .loading-table {
+    padding: 14px;
+  }
+  .loading-table-head,
+  .loading-table-row {
+    gap: 8px;
   }
 }
 @media (min-width: 981px) and (max-width: 1100px) {

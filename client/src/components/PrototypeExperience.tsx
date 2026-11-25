@@ -93,6 +93,20 @@ function addScript(src: string) {
 
 type Boot = Awaited<ReturnType<typeof loadBoot>>;
 
+function loadingMarkup(title: string) {
+  return `<section class="loading-state" role="status" aria-busy="true" aria-label="Loading ${title}">
+    <p class="loading-label">Loading ${title}…</p>
+    <div class="loading-cards" aria-hidden="true">
+      ${Array.from({ length: 3 }, () => '<div class="loading-card"><div class="sk loading-line short"></div><div class="sk loading-line value"></div><div class="sk loading-line"></div></div>').join('')}
+    </div>
+    <div class="loading-main" aria-hidden="true">
+      <div class="loading-card loading-chart"><div class="sk loading-line medium"></div><div class="sk loading-chart-shape"></div></div>
+      <div class="loading-card loading-side"><div class="sk loading-line medium"></div>${Array.from({ length: 4 }, () => '<div class="sk loading-line"></div>').join('')}</div>
+    </div>
+    <div class="loading-card loading-table" aria-hidden="true"><div class="sk loading-line medium"></div><div class="loading-table-head"></div>${Array.from({ length: 4 }, () => '<div class="loading-table-row"><div class="sk loading-line"></div><div class="sk loading-line"></div><div class="sk loading-line"></div><div class="sk loading-line"></div></div>').join('')}</div>
+  </section>`;
+}
+
 function replaceArray<T>(target: T[], source: T[]) {
   target.splice(0, target.length, ...source);
 }
@@ -163,7 +177,7 @@ export default function PrototypeExperience({
       'data-management': 'Data & Device Management',
     };
     if (work)
-      work.innerHTML = `<section class="card" style="margin:20px;padding:24px"><h2>Loading ${routeTitles[route.page] || 'workspace'}</h2><p style="color:var(--muted);margin-top:8px">Fetching this screen’s data…</p></section>`;
+      work.innerHTML = loadingMarkup(routeTitles[route.page] || 'workspace');
     let activePage = route.page;
     const notifyError = (error: unknown) => {
       if (error instanceof ApiError && error.status === 401) {
